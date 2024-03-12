@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tailwind:watch": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
-    "tailwind:build": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css",
+    "tailwind:watch": "npx tailwindcss -i ./public/css/input.css -o public/css/style.css --watch",
+    "tailwind:build": "npx tailwindcss -i ./public/css/input.css -o public/css/style.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

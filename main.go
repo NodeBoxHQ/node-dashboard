@@ -14,6 +14,7 @@ func main() {
 	metrics.Get("/cpu", services.GetCPUUsage)
 	metrics.Get("/ram", services.GetRAMUsage)
 	metrics.Get("/uptime", services.GetSystemUptime)
+	metrics.Get("/disk", services.GetDiskUsage)
 
 	err := app.Listen(":3000")
 	if err != nil {

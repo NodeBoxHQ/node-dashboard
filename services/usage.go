@@ -7,21 +7,57 @@ import (
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/memory"
 	uptime2 "github.com/mackerelio/go-osstat/uptime"
+	"io/ioutil"
 	"math"
+	"os"
+	"syscall"
 	"time"
 )
 
+const (
+	B  = 1
+	KB = 1024 * B
+	MB = 1024 * KB
+	GB = 1024 * MB
+)
+
+type TotalDiskUsage struct {
+	All  uint64 `json:"All"`
+	Used uint64 `json:"Used"`
+	Free uint64 `json:"Free"`
+}
+
+func DiskUsage(path string) (disk TotalDiskUsage) {
+	fs := syscall.Statfs_t{}
+	err := syscall.Statfs(path, &fs)
+	if err != nil {
+		return
+	}
+	disk.All = fs.Blocks * uint64(fs.Bsize)
+	disk.Free = fs.Bfree * uint64(fs.Bsize)
+	disk.Used = disk.All - disk.Free
+	return
+}
+
 func GetCPUUsage(c *fiber.Ctx) error {
 	cpuUsageTemplate := `
-                <div class="flex items-center space-x-2">
-                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cpu-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M5.5.5a.5.5 0 0 0-1 0V2A2.5 2.5 0 0 0 2 4.5H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2A2.5 2.5 0 0 0 4.5 14v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14a2.5 2.5 0 0 0 2.5-2.5h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14A2.5 2.5 0 0 0 11.5 2V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5zm1 4.5A1.5 1.5 0 0 0 5 6.5v3A1.5 1.5 0 0 0 6.5 11h3A1.5 1.5 0 0 0 11 9.5v-3A1.5 1.5 0 0 0 9.5 5h-3zm0 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
-                    </svg>
-                    <div class="text-lg font-semibold">CPU</div>
-                </div>
-                <div class="mt-2 text-3xl">%v<span class="text-sm ml-1">[%%]</span></div>
-                <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-                    <div class="bg-red-600 h-2.5 rounded-full" style="width: %v%%"></div>
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/cpu" hx-trigger="load" hx-swap="outerHTML">
+                    <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">CPU</h3>
+                    <div class="flex flex-col">
+                        <div class="flex content-between items-center gap-1.5 justify-around flex-col">
+                            <div class="w-[45px]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" alt="icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
+                            <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
+                            <div class="w-full h-2.5 rounded-[10px] overflow-hidden relative m-0">
+                                <div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-[10px]"></div>
+                                <div class="absolute top-0 left-0 h-full rounded-[10px] z-10 transition-[width] bg-progressBarFillColor" style="width: %v%%">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 	`
 
@@ -45,13 +81,23 @@ func GetCPUUsage(c *fiber.Ctx) error {
 
 func GetRAMUsage(c *fiber.Ctx) error {
 	ramUsageTemplate := `
-	   <div class="flex items-center space-x-2">
-           <svg width="1em" height="1em" viewBox="0 0 640 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m640 130.94v-34.94c0-17.67-14.33-32-32-32h-576c-17.67 0-32 14.33-32 32v34.94c18.6 6.61 32 24.19 32 45.06s-13.4 38.45-32 45.06v98.94h640v-98.94c-18.6-6.61-32-24.19-32-45.06s13.4-38.45 32-45.06zm-416 125.06h-64v-128h64zm128 0h-64v-128h64zm128 0h-64v-128h64zm-480 192h64v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h64v-96h-640z"/></svg>
-           <div class="text-lg font-semibold">Memory</div>
-       </div>
-       <div class="mt-2 text-3xl">%v<span class="text-sm ml-1">[%%]</span></div>
-       <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-           <div class="bg-red-600 h-2.5 rounded-full" style="width: %v%%"></div>
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/ram" hx-trigger="every 1s" hx-swap="outerHTML">
+           <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">RAM</h3>
+           <div class="flex flex-col">
+                        <div class="flex content-between items-center gap-1.5 justify-around flex-col">
+                            <div class="w-[45px]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" alt="icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
+                            <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
+                            <div class="w-full h-2.5 rounded-[10px] overflow-hidden relative m-0">
+                                <div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-[10px]"></div>
+                                <div class="absolute top-0 left-0 h-full rounded-[10px] z-10 transition-[width] bg-progressBarFillColor" style="width: %v%%">
+                            </div>
+                        </div>
+           </div>
        </div>
 	`
 
@@ -65,13 +111,74 @@ func GetRAMUsage(c *fiber.Ctx) error {
 	return c.SendString(fmt.Sprintf(ramUsageTemplate, math.Round(usage*100)/100, math.Round(usage*100)/100))
 }
 
+func GetDiskUsage(c *fiber.Ctx) error {
+	diskUsageTemplate := `
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/disk" hx-trigger="every 1s" hx-swap="outerHTML">
+           <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Disk Usage</h3>
+           <div class="flex flex-col">
+                        <div class="flex content-between items-center gap-1.5 justify-around flex-col">
+                            <div class="w-[45px]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" alt="icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
+                            <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
+                            <div class="w-full h-2.5 rounded-[10px] overflow-hidden relative m-0">
+                                <div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-[10px]"></div>
+                                <div class="absolute top-0 left-0 h-full rounded-[10px] z-10 transition-[width] bg-progressBarFillColor" style="width: %v%%">
+                            </div>
+                        </div>
+           </div>
+       </div>
+	`
+	rootUsage := DiskUsage("/")
+	totalUsage := TotalDiskUsage{
+		All:  rootUsage.All,
+		Used: rootUsage.Used,
+		Free: rootUsage.Free,
+	}
+
+	if _, err := os.Stat("/mnt"); !os.IsNotExist(err) {
+		mntFolders, err := ioutil.ReadDir("/mnt")
+		if err == nil {
+			for _, folder := range mntFolders {
+				if !folder.IsDir() {
+					continue
+				}
+
+				path := "/mnt/" + folder.Name()
+				usage := DiskUsage(path)
+
+				totalUsage.All += usage.All
+				totalUsage.Used += usage.Used
+				totalUsage.Free += usage.Free
+			}
+		}
+	}
+
+	if totalUsage.All > 0 {
+		totalUsage.Used = uint64((float64(totalUsage.Used) / float64(totalUsage.All)) * 100)
+	}
+
+	return c.SendString(fmt.Sprintf(diskUsageTemplate, totalUsage.Used, totalUsage.Used))
+}
+
 func GetSystemUptime(c *fiber.Ctx) error {
 	uptimeTemplate := `
-		<div class="flex items-center space-x-2">
-                        <svg width="1em" height="1em" fill="currentColor" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg"><path d="m4 0c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 1c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm-.5 1v2.22l.16.13.5.5.34.38.72-.72-.38-.34-.34-.34v-1.81h-1z"/></svg>
-                        <div class="text-lg font-semibold">Uptime</div>
-                    </div>
-                    <div class="mt-2 text-md">%s</div>
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/uptime" hx-trigger="every 1s" hx-swap="outerHTML">
+           <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Up Time</h3>
+           <div class="flex flex-col">
+                        <div class="flex content-between items-center gap-1.5 justify-around flex-col">
+                            <div class="w-[45px]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" alt="icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                            </div>
+                            <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %s </div>
+                        </div>
+           </div>
+       </div>
 	`
 
 	uptime, err := uptime2.Get()

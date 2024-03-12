@@ -1,3 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&amp;display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-backgroundColor;
+    }
+
+    /* Responsiveness */
+    .nodeTypes button.active {
+        transition: 0.4s;
+        -webkit-transform: scale(1.02);
+        -moz-transform: scale(1.02);
+        -ms-transform: scale(1.02);
+        -o-transform: scale(1.02);
+        transform: scale(1.02);
+    }
+
+    button.active {
+        transition: 0.4s;
+        -webkit-transform: scale(0.98);
+        -moz-transform: scale(0.98);
+        -ms-transform: scale(0.98);
+        -o-transform: scale(0.98);
+        transform: scale(0.98);
+    }
+
+    input:focus {
+        transition: 0.4s;
+        -webkit-transform: scale(0.98);
+        -moz-transform: scale(0.98);
+        -ms-transform: scale(0.98);
+        -o-transform: scale(0.98);
+        transform: scale(0.98);
+    }
+}

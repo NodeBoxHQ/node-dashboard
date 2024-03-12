@@ -1,72 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="stylesheet" href="/css/style.css" />
     <script src="/js/vendor/htmx.min.js"></script>
-    <link href="css/output.css" rel="stylesheet"/>
+    <script>
+        htmx.config.globalViewTransitions = true;
+    </script>
+
+    <title>Project | NodeBox</title>
 </head>
-<body class="bg-gray-800 text-white">
-    <div class="max-w-2xl mx-auto py-10">
-        <h1 class="text-4xl font-bold mb-6 text-center">Nodebox Dashboard</h1>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gray-700 p-4 rounded-lg" hx-get="/metrics/cpu" hx-trigger="every 1s" hx-target="#cpu-target" hx-swap="transition:true">
-                <div id="cpu-target">
-                    <div class="flex items-center space-x-2">
-                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cpu-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M5.5.5a.5.5 0 0 0-1 0V2A2.5 2.5 0 0 0 2 4.5H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2A2.5 2.5 0 0 0 4.5 14v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14a2.5 2.5 0 0 0 2.5-2.5h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14A2.5 2.5 0 0 0 11.5 2V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5zm1 4.5A1.5 1.5 0 0 0 5 6.5v3A1.5 1.5 0 0 0 6.5 11h3A1.5 1.5 0 0 0 11 9.5v-3A1.5 1.5 0 0 0 9.5 5h-3zm0 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+<body>
+<main class="px-5 py-20 md:px-6">
+    <header class="flex flex-col items-center justify-center">
+        <img src="/img/logo/logo-expanded.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+        <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0">
+            <div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
+            <div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 bg-green-500"></div>
+            <div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node Active </div>
+        </div>
+    </header>
+    <div class="flex flex-col items-center">
+        <div class="max-w-2xl w-full sticky sm:justify-center">
+            <button id="connectionsBtn" class="w-6 h-6 absolute -right-2 -top-6 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-textColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+            </button>
+            <div id="cards" class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:grid-cols-3 gap-3">
+                <div class="flex justify-center items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/cpu" hx-trigger="load" hx-swap="outerHTML">
+                    <div role="status" class="flex justify-center items-center">
+                        <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
                         </svg>
-                        <div class="text-lg font-semibold">CPU</div>
-                    </div>
-                    <div class="mt-2 text-3xl">0<span class="text-sm ml-1">[%]</span></div>
-                    <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-                        <div class="bg-red-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-            </div>
-            <div class="bg-gray-700 p-4 rounded-lg" hx-get="/metrics/ram" hx-trigger="every 1s" hx-target="#ram-target" hx-swap="transition:true">
-                <div id="ram-target">
-                    <div class="flex items-center space-x-2">
-                        <svg width="1em" height="1em" viewBox="0 0 640 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m640 130.94v-34.94c0-17.67-14.33-32-32-32h-576c-17.67 0-32 14.33-32 32v34.94c18.6 6.61 32 24.19 32 45.06s-13.4 38.45-32 45.06v98.94h640v-98.94c-18.6-6.61-32-24.19-32-45.06s13.4-38.45 32-45.06zm-416 125.06h-64v-128h64zm128 0h-64v-128h64zm128 0h-64v-128h64zm-480 192h64v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h128v-26.67c0-8.84 7.16-16 16-16s16 7.16 16 16v26.67h64v-96h-640z"/></svg>
-                        <div class="text-lg font-semibold">Memory</div>
-                    </div>
-                    <div class="mt-2 text-3xl">0<span class="text-sm ml-1">[%]</span></div>
-                    <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-                        <div class="bg-red-600 h-2.5 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-gray-700 p-4 rounded-lg">
-                <div class="flex items-center space-x-2">
-                    <svg fill="none" width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff"><path d="m7.49991 3h8.99999c1.1046 0 2 .52941 2.5 2.11765l2.2506 7.76465c-.3219-.1397-.6592-.2073-1.0003-.244-.4682-.0505-1.0406-.0504-1.6994-.0504h-13.10155c-.65883 0-1.23127-.0001-1.69942.0504-.34118.0367-.67858.1044-1.0005.2441l2.25058-7.76475c.5-1.58824 1.39543-2.11765 2.5-2.11765z"/><path clip-rule="evenodd" d="m21.6629 14.529c.0771.1222.1366.2554.1825.4058l.006.0209c.1485.5059.1485 1.2069.1485 2.3384 0 1.03 0 1.7033-.112 2.1974-.0093.0409-.0193.0806-.0302.1192-.0474.1679-.1106.3144-.1948.4478-.1459.2312-.3334.4298-.5518.5843-.5044.3569-1.2066.3569-2.6111.3569h-13c-1.40446 0-2.10669 0-2.61114-.3569-.21838-.1545-.40588-.3531-.5518-.5843-.33706-.5341-.33706-1.2776-.33706-2.7647 0-1.0742 0-1.7605.12707-2.2601l.00784-.03c.00435-.0162.00894-.0325.01358-.0483l.00056-.0019c.04659-.1582.10774-.2973.18801-.4245.14592-.2312.33342-.4297.5518-.5842.50445-.3569 1.20668-.3569 2.61114-.3569h13c1.4045 0 2.1067 0 2.6111.3569.2184.1545.4059.353.5518.5842zm-9.4129 2.471c0-.4142-.3358-.75-.75-.75s-.75.3358-.75.75v1c0 .4142.3358.75.75.75s.75-.3358.75-.75zm1.75-.75c.4142 0 .75.3358.75.75v1c0 .4142-.3358.75-.75.75s-.75-.3358-.75-.75v-1c0-.4142.3358-.75.75-.75zm3.25.75c0-.4142-.3358-.75-.75-.75s-.75.3358-.75.75v1c0 .4142.3358.75.75.75s.75-.3358.75-.75zm2.5 0c0-.4142-.3358-.75-.75-.75s-.75.3358-.75.75v1c0 .4142.3358.75.75.75s.75-.3358.75-.75z" fill-rule="evenodd"/></g></svg>
-                    <div class="text-lg font-semibold">Storage</div>
-                </div>
-                <div class="mt-2 text-3xl">34<span class="text-sm ml-1">[%]</span></div>
-                <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-                    <div class="bg-red-600 h-2.5 rounded-full" style="width: 34%"></div>
-                </div>
-            </div>
-            <div class="bg-gray-700 p-4 rounded-lg">
-                <div class="flex items-center space-x-2">
-                    <svg width="1em" height="1em" fill="currentColor" viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg"><path d="m640 264v-16c0-8.84-7.16-16-16-16h-280v-40h72c17.67 0 32-14.33 32-32v-128c0-17.67-14.33-32-32-32h-192c-17.67 0-32 14.33-32 32v128c0 17.67 14.33 32 32 32h72v40h-280c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h104v40h-56c-17.67 0-32 14.33-32 32v128c0 17.67 14.33 32 32 32h160c17.67 0 32-14.33 32-32v-128c0-17.67-14.33-32-32-32h-56v-40h304v40h-56c-17.67 0-32 14.33-32 32v128c0 17.67 14.33 32 32 32h160c17.67 0 32-14.33 32-32v-128c0-17.67-14.33-32-32-32h-56v-40h104c8.84 0 16-7.16 16-16zm-384-136v-64h128v64zm-64 320h-96v-64h96zm352 0h-96v-64h96z"/></svg>
-                    <div class="text-lg font-semibold">Network</div>
-                </div>
-                <div class="mt-2 text-3xl">34<span class="text-sm ml-1">[%]</span></div>
-                <div class="w-full bg-blue-200 rounded-full h-2.5 dark:bg-blue-700 mt-3">
-                    <div class="bg-red-600 h-2.5 rounded-full" style="width: 34%"></div>
-                </div>
-            </div>
-            <div class="bg-gray-700 p-4 rounded-lg" hx-get="/metrics/uptime" hx-trigger="every 1s" hx-target="#uptime-target" hx-swap="transition:true">
-                <div id="uptime-target">
-                    <div class="flex items-center space-x-2">
-                        <svg width="1em" height="1em" fill="currentColor" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg"><path d="m4 0c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 1c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm-.5 1v2.22l.16.13.5.5.34.38.72-.72-.38-.34-.34-.34v-1.81h-1z"/></svg>
-                        <div class="text-lg font-semibold">Uptime</div>
-                    </div>
-                    <div class="mt-2 text-md"></div>
-                </div>
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/ram" hx-trigger="load" hx-swap="outerHTML"></div>
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/disk" hx-trigger="load" hx-swap="outerHTML"></div>
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/uptime" hx-trigger="load" hx-swap="outerHTML"></div>
             </div>
         </div>
     </div>
+</main>
 </body>
 </html>
