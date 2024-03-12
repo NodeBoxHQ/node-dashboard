@@ -1,6 +1,6 @@
 # NodeBox Dashboard
 
-Some very simple statistics for a single Nodebox node.
+Some very simple statistics dashboard for a single Nodebox node.
 
 ## Requirements
 
