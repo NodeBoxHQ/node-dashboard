@@ -8,6 +8,8 @@
     <meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="/css/style.css" />
     <script src="/js/vendor/htmx.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <script>
         htmx.config.globalViewTransitions = true;
     </script>
@@ -18,11 +20,7 @@
 <main class="px-5 py-20 md:px-6">
     <header class="flex flex-col items-center justify-center">
         <img src="/img/logo/logo-expanded.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
-        <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0">
-            <div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
-            <div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 bg-green-500"></div>
-            <div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node Active </div>
-        </div>
+        <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/metrics/activity" hx-trigger="load" hx-swap="outerHTML"></div>
     </header>
     <div class="flex flex-col items-center">
         <div class="max-w-2xl w-full sticky sm:justify-center">

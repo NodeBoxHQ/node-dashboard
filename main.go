@@ -1,13 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/services"
+	"github.com/NodeboxHQ/node-dashboard/services/config"
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	app := fiber.New()
+	config.ShowAsciiArt()
+	cfg, err := config.LoadConfig()
 
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		return
+	}
+
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 	app.Static("/", "./public")
 
 	metrics := app.Group("/metrics")
@@ -15,8 +26,9 @@ func main() {
 	metrics.Get("/ram", services.GetRAMUsage)
 	metrics.Get("/uptime", services.GetSystemUptime)
 	metrics.Get("/disk", services.GetDiskUsage)
+	metrics.Get("/activity", services.GetActivity(cfg))
 
-	err := app.Listen(":3000")
+	err = app.Listen(":3000")
 	if err != nil {
 		panic(err)
 	}
