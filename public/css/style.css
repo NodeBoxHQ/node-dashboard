@@ -712,6 +712,10 @@ input:focus {
   width: 13rem;
 }
 
+.w-44{
+  width: 7rem;
+}
+
 .w-6{
   width: 1.5rem;
 }
@@ -749,11 +753,11 @@ input:focus {
 }
 
 .w-2\/6{
-  width: 33.333333%;
+  width: 15%;
 }
 
 .max-w-2xl{
-  max-width: 42rem;
+  max-width: 30rem;
 }
 
 .-translate-x-1\/2{
@@ -858,7 +862,7 @@ input:focus {
 
 .bg-progressBarFillColor{
   --tw-bg-opacity: 1;
-  background-color: rgb(229 51 37 / var(--tw-bg-opacity));
+  background-color: rgb(255 116 56 / var(--tw-bg-opacity));
 }
 
 .bg-red-500{
@@ -937,7 +941,7 @@ input:focus {
 
 .text-cardTitleColor{
   --tw-text-opacity: 1;
-  color: rgb(229 51 37 / var(--tw-text-opacity));
+  color: rgb(255 116 56 / var(--tw-text-opacity));
 }
 
 .text-gray-200{
