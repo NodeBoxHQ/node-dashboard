@@ -14,6 +14,7 @@ type Config struct {
 	IPv4  string `json:"ip"`
 	IPv6  string `json:"ip6"`
 	Owner string `json:"owner"`
+	Port  int    `json:"port"`
 }
 
 var loadedConfig *Config

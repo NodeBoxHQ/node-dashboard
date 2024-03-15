@@ -28,7 +28,7 @@ func main() {
 	metrics.Get("/disk", services.GetDiskUsage)
 	metrics.Get("/activity", services.GetActivity(cfg))
 
-	err = app.Listen(":3000")
+	err = app.Listen(fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
 		panic(err)
 	}
