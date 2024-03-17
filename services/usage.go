@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -42,14 +43,28 @@ func DiskUsage(path string) (disk TotalDiskUsage) {
 	return
 }
 
+func GetLogo(config *config.Config) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if config.Node == "Linea" {
+			return c.SendString(`<img src="/assets/img/logo/linea-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+		} else if config.Node == "Dusk" {
+			return c.SendString(`<img src="/assets/img/logo/dusk-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+		} else if config.Node == "Nulink" {
+			return c.SendString(`<img src="/assets/img/logo/nulink-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+		} else {
+			return c.SendString("")
+		}
+	}
+}
+
 func GetCPUUsage(c *fiber.Ctx) error {
 	cpuUsageTemplate := `
-                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/cpu" hx-trigger="load" hx-swap="outerHTML">
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML">
                     <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">CPU</h3>
                     <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-								<img src="/img/icons/cpu.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+								<img src="/assets/img/icons/cpu.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -82,12 +97,12 @@ func GetCPUUsage(c *fiber.Ctx) error {
 
 func GetRAMUsage(c *fiber.Ctx) error {
 	ramUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/ram" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="every 1s" hx-swap="outerHTML">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">RAM</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-							<img src="/img/icons/memory.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+							<img src="/assets/img/icons/memory.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -112,12 +127,12 @@ func GetRAMUsage(c *fiber.Ctx) error {
 
 func GetDiskUsage(c *fiber.Ctx) error {
 	diskUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/disk" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="every 1s" hx-swap="outerHTML">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Disk Usage</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-							<img src="/img/icons/storage.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+							<img src="/assets/img/icons/storage.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -163,12 +178,12 @@ func GetDiskUsage(c *fiber.Ctx) error {
 
 func GetSystemUptime(c *fiber.Ctx) error {
 	uptimeTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/metrics/uptime" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="every 1s" hx-swap="outerHTML">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Uptime</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px] ml-2">
-								<img src="/img/icons/runtime.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+								<img src="/assets/img/icons/runtime.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
 							</div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %s </div>
                         </div>
@@ -189,10 +204,10 @@ func GetActivity(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/metrics/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar">
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
-            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 bg-%s-500"></div>
-            		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> %s - Node %s </div>
+            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
+            		<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
 
@@ -201,30 +216,22 @@ func GetActivity(config *config.Config) fiber.Handler {
 			adjective := ""
 
 			if status.Failure {
-				color = "red"
+				color = "bg-red-500"
 				adjective = "Offline"
 			} else if status.Syncing {
-				color = "yellow"
+				color = "bg-yellow-500"
 				adjective = "Syncing"
 			} else {
-				color = "green"
+				color = "bg-green-500"
 				adjective = "Online"
 			}
 
-			activityTemplate = activityTemplate +
-				`
-			<script>
-				tippy('#activity-bar', {
-					content: '<b>Node</b> - %s <br> <b>Owner</b> - %s <br> <b>IPv4</b> - %s <br> <b>IPv6</b> - %s',
-					allowHTML: true,
-				})
-			</script>
-			`
-
-			return c.SendString(fmt.Sprintf(activityTemplate, color, config.Node, adjective, config.Node, config.Owner, config.IPv4, config.IPv6))
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s <br> <b>IPv4</b> - %s <br> <b>IPv6</b> - %s <br> <b>Current Height</b> - %d", config.Node, config.Owner, config.IPv4, config.IPv6, status.CurrentHeight)
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`x-tooltip.html x-tooltip.interactive x-tooltip.on.mouseenter x-data x-tooltip.raw="%s"`, tippyContent), -1)
+			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/metrics/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar">
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar">
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
             		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 bg-%s-500"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>

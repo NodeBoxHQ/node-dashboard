@@ -20,6 +20,9 @@ export default {
         glowColor: "#ffffffb3",
         themeSwitcherColor: "#E53325",
       },
+      zIndex: {
+        '100': '100',
+      }
     },
   },
   plugins: [],

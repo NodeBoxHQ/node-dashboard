@@ -25,8 +25,8 @@ func NodeStatus() Status {
 	}
 
 	outputStr := strings.TrimSpace(string(output))
-
 	height, err := strconv.Atoi(outputStr)
+
 	if err != nil {
 		return status
 	}
