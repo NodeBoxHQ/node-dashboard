@@ -173,7 +173,7 @@ func SelfUpdate(version string) {
 		return
 	}
 
-	url := FetchLatestReleaseDownloadURL("NodeBoxHQ", "nodebox-dashboard", "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", versionInt)
+	url := FetchLatestReleaseDownloadURL("NodeBoxHQ", "nodebox-dashboard", versionInt)
 
 	if url == "" {
 		return
@@ -215,14 +215,13 @@ type Release struct {
 	} `json:"assets"`
 }
 
-func FetchLatestReleaseDownloadURL(owner, repo, token string, version int) string {
+func FetchLatestReleaseDownloadURL(owner, repo string, version int) string {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", owner, repo)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return ""
 	}
 
-	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github+json")
 
 	client := &http.Client{}

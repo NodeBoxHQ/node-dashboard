@@ -11,4 +11,4 @@ build-linux-x86_64:
 all: clean build-linux-aarch64 build-linux-x86_64
 
 clean:
-	rm -rf bin/
+	rm -rf bin/*
