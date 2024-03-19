@@ -7,8 +7,9 @@ import (
 )
 
 type Status struct {
-	Failure bool `json:"failure"`
-	Height  int  `json:"height"`
+	Failure bool   `json:"failure"`
+	Height  int    `json:"height"`
+	Version string `json:"version"`
 }
 
 func NodeStatus() Status {
@@ -33,6 +34,20 @@ func NodeStatus() Status {
 
 	status.Height = height
 	status.Failure = false
+
+	cmd = exec.Command("ruskquery", "info")
+
+	output, err = cmd.Output()
+
+	if err != nil {
+		status.Version = "Unknown"
+	}
+
+	if strings.Contains(string(output), "version") == false {
+		status.Version = "Unknown"
+	} else {
+		status.Version = strings.Split(strings.Split(string(output), "version\": \"")[1], "\"")[0]
+	}
 
 	return status
 }

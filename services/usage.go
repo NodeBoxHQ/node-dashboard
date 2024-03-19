@@ -5,6 +5,7 @@ import (
 	"github.com/NodeboxHQ/node-dashboard/services/config"
 	"github.com/NodeboxHQ/node-dashboard/services/dusk"
 	"github.com/NodeboxHQ/node-dashboard/services/linea"
+	"github.com/NodeboxHQ/node-dashboard/services/nulink"
 	"github.com/NodeboxHQ/node-dashboard/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mackerelio/go-osstat/cpu"
@@ -59,7 +60,7 @@ func GetLogo(config *config.Config) fiber.Handler {
 
 func GetCPUUsage(c *fiber.Ctx) error {
 	cpuUsageTemplate := `
-                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML">
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML transition:true">
                     <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">CPU</h3>
                     <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -97,7 +98,7 @@ func GetCPUUsage(c *fiber.Ctx) error {
 
 func GetRAMUsage(c *fiber.Ctx) error {
 	ramUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">RAM</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -127,7 +128,7 @@ func GetRAMUsage(c *fiber.Ctx) error {
 
 func GetDiskUsage(c *fiber.Ctx) error {
 	diskUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Disk Usage</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -178,7 +179,7 @@ func GetDiskUsage(c *fiber.Ctx) error {
 
 func GetSystemUptime(c *fiber.Ctx) error {
 	uptimeTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="every 1s" hx-swap="outerHTML">
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Uptime</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -204,10 +205,10 @@ func GetActivity(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
-            		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
-            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
-            		<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
+        		<div class="cursor-pointer w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+						<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
+						<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
+						<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
 
@@ -226,14 +227,23 @@ func GetActivity(config *config.Config) fiber.Handler {
 				adjective = "Online"
 			}
 
-			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s <br> <b>IPv4</b> - %s <br> <b>IPv6</b> - %s <br> <b>Current Height</b> - %d", config.Node, config.Owner, config.IPv4, config.IPv6, status.CurrentHeight)
-			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`x-tooltip.html x-tooltip.interactive x-tooltip.on.mouseenter x-data x-tooltip.raw="%s"`, tippyContent), -1)
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
+
+			if !status.Failure {
+				if status.Syncing {
+					tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d <br> <b>Max Height</b> - %d", status.CurrentHeight, status.MaxHeight)
+				} else {
+					tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d", status.CurrentHeight)
+				}
+			}
+
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar">
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
-            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 bg-%s-500"></div>
+            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
@@ -243,24 +253,48 @@ func GetActivity(config *config.Config) fiber.Handler {
 			adjective := ""
 
 			if status.Failure {
-				color = "red"
+				color = "bg-red-500"
 				adjective = "Offline"
 			} else {
-				color = "green"
+				color = "bg-green-500"
 				adjective = "Online"
 			}
 
-			activityTemplate = activityTemplate +
-				`
-			<script>
-				tippy('#activity-bar', {
-					content: '<b>Node</b> - %s <br> <b>Owner</b> - %s <br> <b>IPv4</b> - %s <br> <b>IPv6</b> - %s <br> <b>Height</b> - %d',
-					allowHTML: true,
-				})
-			</script>
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Version</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, status.Version, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
+
+			if !status.Failure {
+				tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d", status.Height)
+			} else {
+				tippyContent = tippyContent + "<b>Current Height</b> - 0"
+			}
+
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
+			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
+		} else if config.Node == "Nulink" {
+			activityTemplate := `
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+            		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
+            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
+            		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
+        		</div>
 			`
 
-			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective, config.Node, config.Owner, config.IPv4, config.IPv6, status.Height))
+			status := nulink.NodeStatus()
+			color := ""
+			adjective := ""
+
+			if status.Online {
+				color = "bg-green-500"
+				adjective = "Online"
+			} else {
+				color = "bg-red-500"
+				adjective = "Offline"
+			}
+
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
+
+			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else {
 			return c.SendString("")
 		}

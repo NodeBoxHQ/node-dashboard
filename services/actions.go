@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
 	"github.com/gofiber/fiber/v2"
 	"os/exec"
@@ -8,15 +9,15 @@ import (
 
 func RestartNode(cfg *config.Config) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		if cfg.Node == "linea" {
-			err := exec.Command("systemctl", "stop", "linea").Run()
+		if cfg.Node == "Linea" {
+			err := exec.Command("systemctl", "restart", "linea").Run()
 			if err != nil {
 				return c.SendString("Error stopping linea service")
 			} else {
 				return c.SendString("Linea service stopped")
 			}
-		} else if cfg.Node == "dusk" {
-			err := exec.Command("service", "rusk", "stop").Run()
+		} else if cfg.Node == "Dusk" {
+			err := exec.Command("systemctl", "restart", "rusk").Run()
 			if err != nil {
 				return c.SendString("Error stopping rusk service")
 			} else {
@@ -30,8 +31,10 @@ func RestartNode(cfg *config.Config) func(c *fiber.Ctx) error {
 func RestartServer(c *fiber.Ctx) error {
 	err := exec.Command("reboot").Run()
 	if err != nil {
+		fmt.Println(err)
 		return c.SendString("Error rebooting server")
 	} else {
+		fmt.Println("Server rebooting")
 		return c.SendString("Server rebooting")
 	}
 }

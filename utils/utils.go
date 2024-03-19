@@ -1,6 +1,19 @@
 package utils
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/NodeboxHQ/node-dashboard/services/config"
+	"github.com/NodeboxHQ/node-dashboard/utils/logger"
+	"io"
+	"net"
+	"net/http"
+	"os"
+	"os/exec"
+	"regexp"
+	"strconv"
+	"strings"
+)
 
 func SecondsToReadable(seconds int) string {
 	days := seconds / 86400
@@ -28,6 +41,239 @@ func SecondsToReadable(seconds int) string {
 	return timeString
 }
 
-func StartsWith(s string, prefix string) bool {
-	return len(s) >= len(prefix) && s[:len(prefix)] == prefix
+func InstallService() {
+	hostname, _ := os.Hostname()
+
+	if hostname == "hayzam-pc" {
+		return
+	}
+
+	if strings.Contains(hostname, "-nulink") || hostname == "hayzam-pc" {
+		return
+	}
+
+	if _, err := os.Stat("/etc/systemd/system/nodebox-dashboard.service"); os.IsNotExist(err) {
+		var service string
+
+		service = `
+[Unit]
+Description=Nodebox Dashboard
+After=network.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+Restart=always
+RestartSec=5
+WorkingDirectory=/opt/nodebox-dashboard
+ExecStart=/opt/nodebox-dashboard/nodebox-dashboard
+
+[Install]
+WantedBy=multi-user.target
+`
+
+		err := os.WriteFile("/etc/systemd/system/nodebox-dashboard.service", []byte(service), 0644)
+
+		if err != nil {
+			logger.Error("Error writing service file", err)
+		}
+
+		_, err = exec.Command("systemctl", "daemon-reload").Output()
+
+		if err != nil {
+			logger.Error("Error reloading systemd daemon", err)
+		}
+
+		_, err = exec.Command("systemctl", "enable", "nodebox-dashboard").Output()
+
+		if err != nil {
+			logger.Error("Error enabling service", err)
+		}
+
+		logger.Info("Service installed, rebooting")
+
+		_, err = exec.Command("reboot").Output()
+	} else {
+		logger.Info("Service already installed")
+	}
+}
+
+func IsPortInUse(port int) bool {
+	tcpAddr, tcpErr := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
+	if tcpErr != nil {
+		fmt.Println("Error resolving TCP address:", tcpErr)
+		return true
+	}
+	tcpLn, tcpErr := net.ListenTCP("tcp", tcpAddr)
+	if tcpErr != nil {
+		return true
+	}
+	defer tcpLn.Close()
+
+	udpAddr, udpErr := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", port))
+	if udpErr != nil {
+		fmt.Println("Error resolving UDP address:", udpErr)
+		return true
+	}
+	udpLn, udpErr := net.ListenUDP("udp", udpAddr)
+	if udpErr != nil {
+		return true
+	}
+	defer udpLn.Close()
+
+	return false
+}
+
+func GetCurrentCPUArch() string {
+	cmd := exec.Command("uname", "-m")
+	stdout, err := cmd.Output()
+
+	if err != nil {
+		logger.Error("Error getting CPU architecture", err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(stdout))
+}
+
+func DownloadFile(url, filepath string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	out, err := os.Create(filepath)
+
+	if err != nil {
+		return err
+	}
+
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+
+	return err
+}
+
+func SelfUpdate(version string) {
+	nodeType := config.GetNodeType()
+
+	if nodeType == "nulink" {
+		return
+	}
+
+	version = strings.Replace(version, ".", "", -1)
+	versionInt, err := strconv.Atoi(version)
+
+	if err != nil {
+		logger.Error("Error converting version to integer:", err)
+		return
+	}
+
+	url := FetchLatestReleaseDownloadURL("NodeBoxHQ", "nodebox-dashboard", "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", versionInt)
+
+	if url == "" {
+		return
+	}
+
+	logger.Info("New version found, downloading from:", url)
+
+	err = DownloadFile(url, "/tmp/nodebox-dashboard")
+
+	if err != nil {
+		logger.Error("Error downloading new version:", err)
+		return
+	}
+
+	newBinary := "/tmp/nodebox-dashboard"
+	oldBinary := "/opt/nodebox-dashboard/nodebox-dashboard"
+
+	err = os.Rename(newBinary, oldBinary)
+
+	if err != nil {
+		logger.Error("Error replacing old binary with new binary:", err)
+		return
+	}
+
+	_, err = exec.Command("systemctl", "restart", "nodebox-dashboard").Output()
+
+	if err != nil {
+		logger.Error("Error restarting service:", err)
+		return
+	}
+}
+
+type Release struct {
+	TagName            string `json:"tag_name"`
+	BrowserDownloadURL string `json:"browser_download_url"`
+	Assets             []struct {
+		Name               string `json:"name"`
+		BrowserDownloadURL string `json:"browser_download_url"`
+	} `json:"assets"`
+}
+
+func FetchLatestReleaseDownloadURL(owner, repo, token string, version int) string {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", owner, repo)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return ""
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Error("Error fetching latest release:", err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		logger.Error("Error fetching latest release:", resp.Status)
+		return ""
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Error("Error reading response body:", err)
+		return ""
+	}
+
+	var releases []Release
+	if err := json.Unmarshal(body, &releases); err != nil {
+		logger.Error("Error unmarshalling response body:", err)
+		return ""
+	}
+
+	if len(releases) > 0 {
+		latestRelease := releases[0]
+		for _, asset := range latestRelease.Assets {
+			if strings.Contains(asset.Name, GetCurrentCPUArch()) {
+				pattern := `\d+\.\d+\.\d+`
+				re := regexp.MustCompile(pattern)
+				maybeLatest := re.FindString(asset.Name)
+				maybeLatestInt, err := strconv.Atoi(strings.Replace(maybeLatest, ".", "", -1))
+
+				if err != nil {
+					logger.Error("Error converting maybeLatest to integer:", err)
+					return ""
+				}
+
+				if maybeLatestInt > version {
+					return asset.BrowserDownloadURL
+				}
+			}
+		}
+	} else {
+		logger.Error("No releases found")
+		return ""
+	}
+
+	logger.Info("No new version found")
+	return ""
 }

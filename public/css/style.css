@@ -568,6 +568,40 @@ input:focus {
   --tw-backdrop-sepia:  ;
 }
 
+.container{
+  width: 100%;
+}
+
+@media (min-width: 640px){
+  .container{
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px){
+  .container{
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px){
+  .container{
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px){
+  .container{
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px){
+  .container{
+    max-width: 1536px;
+  }
+}
+
 .sr-only{
   position: absolute;
   width: 1px;
@@ -624,6 +658,10 @@ input:focus {
   left: 50%;
 }
 
+.left-2{
+  left: 0.5rem;
+}
+
 .right-0{
   right: 0px;
 }
@@ -636,8 +674,8 @@ input:focus {
   top: 50%;
 }
 
-.-left-2{
-  left: -0.5rem;
+.top-2{
+  top: 0.5rem;
 }
 
 .z-0{
@@ -652,16 +690,12 @@ input:focus {
   z-index: 20;
 }
 
-.z-50{
-  z-index: 50;
-}
-
-.z-100{
-  z-index: 100;
-}
-
 .z-\[100\]{
   z-index: 100;
+}
+
+.z-\[10\]{
+  z-index: 10;
 }
 
 .m-0{
@@ -704,6 +738,10 @@ input:focus {
 
 .block{
   display: block;
+}
+
+.inline-block{
+  display: inline-block;
 }
 
 .inline{
@@ -787,7 +825,7 @@ input:focus {
 }
 
 .w-\[90\%\%\]{
-  width: 90%;
+  width: 90%%;
 }
 
 .w-full{
@@ -796,6 +834,10 @@ input:focus {
 
 .max-w-2xl{
   max-width: 42rem;
+}
+
+.grow{
+  flex-grow: 1;
 }
 
 .-translate-x-1\/2{

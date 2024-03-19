@@ -5,10 +5,18 @@ import (
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/services"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
+	"github.com/NodeboxHQ/node-dashboard/utils"
+	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/template/jet/v2"
+	"log"
+	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 //go:embed views/*
@@ -19,7 +27,12 @@ var publicFS embed.FS
 
 func main() {
 	config.ShowAsciiArt()
+	logger.InitLogger()
+	logger.Info("Initializing Node Dashboard...")
+
 	cfg, err := config.LoadConfig()
+
+	logger.Info("Loaded config: ", cfg)
 
 	if err != nil {
 		fmt.Println("Error loading config:", err)
@@ -55,10 +68,48 @@ func main() {
 	actions := app.Group("/actions")
 	actions.Get("/restart-node", services.RestartNode(cfg))
 	actions.Get("/restart-server", services.RestartServer)
-	actions.Get("/shutdown-server", services.ShutdownServer)
+	//actions.Get("/shutdown-server", services.ShutdownServer)
 
-	err = app.Listen(fmt.Sprintf(":%d", cfg.Port))
-	if err != nil {
-		panic(err)
-	}
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := app.Listen(fmt.Sprintf(":%d", cfg.Port)); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	go func() {
+		checkPortOpen := func(port int) bool {
+			timeout := time.Second
+			conn, err := net.DialTimeout("tcp", net.JoinHostPort("", fmt.Sprintf("%d", port)), timeout)
+			if err != nil {
+				return false
+			}
+			if conn != nil {
+				conn.Close()
+				return true
+			}
+			return false
+		}
+
+		for !checkPortOpen(cfg.Port) {
+			time.Sleep(time.Second)
+		}
+
+		utils.InstallService()
+	}()
+
+	updateTicker := time.NewTicker(10 * time.Minute)
+
+	go func() {
+		for {
+			select {
+			case <-updateTicker.C:
+				utils.SelfUpdate(cfg.NodeboxDashboardVersion)
+			}
+		}
+	}()
+
+	<-stopChan
 }

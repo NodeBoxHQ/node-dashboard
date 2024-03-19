@@ -7,56 +7,56 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="/assets/css/vendor/tippy-6.3.7.min.css" />
+    <link rel="stylesheet" href="/assets/css/vendor/sweetalert2-11.10.6.min.css" />
     <link rel="stylesheet" href="/assets/css/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/img/icons/favicon.ico"/>
     <title>NodeBox | {{ Title }}</title>
-    <script src="/assets/js/vendor/alpine-tooltip-2.0.0.min.js"></script>
-    <script src="/assets/js/vendor/alpine-3.13.7.min.js"></script>
-    <script src="/assets/js/vendor/htmx-1.9.11.min.js"></script>
-    <script>
-        htmx.config.globalViewTransitions = true;
-    </script>
+    <script type="application/javascript" src="/assets/js/vendor/alpine-3.13.7.min.js" defer></script>
+    <script type="application/javascript" src="/assets/js/vendor/popperjs-2.11.8.min.js"></script>
+    <script type="application/javascript" src="/assets/js/vendor/tippy-6.3.7.umd.min.js"></script>
+    <script type="application/javascript" src="/assets/js/vendor/htmx-1.9.11.min.js"></script>
+    <script type="application/javascript" src="/assets/js/vendor/sweetalert2-11.10.6.min.js"></script>
 </head>
 <body>
 <main class="px-5 py-20 md:px-6">
-    <header class="flex flex-col items-center justify-center cursor-pointer">
+    <header class="flex flex-col items-center justify-center">
         <img src="" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" hx-get="/data/logo" hx-trigger="load" hx-swap="outerHTML" />
         <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="load" hx-swap="outerHTML"></div>
     </header>
     <div class="flex flex-col items-center">
         <div class="max-w-2xl w-full sticky sm:justify-center">
-            <div x-data="{ open: false }" class="relative z-[100]">
-                <button @click="open = !open" id="connectionsBtn" class="w-6 h-6 absolute -right-2 -top-6 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-textColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-            </button>
-            <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden">
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Restart Node</a>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Restart Server</a>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Shutdown Server</a>
-        </div>
-    </div>
-    <div id="cards" class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:grid-cols-2 gap-3">
-        <div class="flex justify-center items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML">
-            <div role="status" class="flex justify-center items-center">
-                <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                </svg>
-                <span class="sr-only">Loading...</span>
+            <div x-data="{ open: false }" class="relative z-[10]">
+                <button @click="open = !open" id="connectionsBtn" class="w-6 h-6 absolute -right-2 -top-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-textColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </button>
+                <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden">
+                    <a @click="open = false" hx-get="/actions/restart-node" hx-confirm="This will restart the blockchain node running on your server" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Node</a>
+                    <a @click="open = false" hx-get="/actions/restart-server" hx-confirm="This will restart the server, you may lose connection for some time" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Server</a>
+                </div>
+            </div>
+            <div id="cards" class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:grid-cols-2 gap-3">
+                <div class="flex justify-center items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML transition:true">
+                    <div role="status" class="flex justify-center items-center">
+                        <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
             </div>
         </div>
-        <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="load" hx-swap="outerHTML"></div>
-        <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="load" hx-swap="outerHTML"></div>
-        <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="load" hx-swap="outerHTML"></div>
     </div>
-</div>
-</div>
-<div class="flex justify-center items-center" style="margin-top: 25px;">
-    <a href="https://nodebox.cloud/" target="_blank"><img src="/assets/img/logo/nodebox-logo.png" alt="logo-expanded" class="w-44 h-auto object-contain mx-auto block"></a>
-</div>
+    <div class="flex justify-center items-center" style="margin-top: 25px;">
+        <a href="https://nodebox.cloud/" target="_blank"><img src="/assets/img/logo/nodebox-logo.png" alt="logo-expanded" class="w-44 h-auto object-contain mx-auto block"></a>
+    </div>
 </main>
+<script type="application/javascript" src="/assets/js/index.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 export default {
-  content: ["./public/**/*.{html,js}", "./services/**/*.go"],
+  content: ["./public/**/*.{html,js}", "./services/**/*.go", "./views/*.jet"],
   theme: {
     extend: {
       fontFamily: {
