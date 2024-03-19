@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const version = "8.0.4"
+const version = "1.0.0"
 
 type Config struct {
 	Node                    string `json:"node"`
