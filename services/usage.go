@@ -237,6 +237,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 				}
 			}
 
+			tippyContent = tippyContent + fmt.Sprintf("<b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
@@ -268,6 +269,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 				tippyContent = tippyContent + "<b>Current Height</b> - 0"
 			}
 
+			tippyContent = tippyContent + fmt.Sprintf("<br> <b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Nulink" {
@@ -292,6 +294,8 @@ func GetActivity(config *config.Config) fiber.Handler {
 			}
 
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
+
+			tippyContent = tippyContent + fmt.Sprintf("<br> <b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))

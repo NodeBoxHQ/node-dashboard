@@ -100,7 +100,7 @@ func main() {
 		utils.InstallService()
 	}()
 
-	updateTicker := time.NewTicker(10 * time.Second)
+	updateTicker := time.NewTicker(10 * time.Minute)
 
 	go func() {
 		for {
