@@ -17,9 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Extract Tag Name
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Build Binaries
         run: |
-          make all
+          make all VERSION=${VERSION}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -28,5 +32,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           files: |
-            bin/nodebox-dashboard-linux-aarch64
-            bin/nodebox-dashboard-linux-x86_64
+            bin/nodebox-dashboard-${{ env.VERSION }}-linux-aarch64
+            bin/nodebox-dashboard-${{ env.VERSION }}-linux-x86_64
