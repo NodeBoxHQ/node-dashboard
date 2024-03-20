@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const version = "1.0.3"
+const version = "1.0.4"
 
 type Config struct {
 	Node                    string `json:"node"`
@@ -25,6 +25,20 @@ type Config struct {
 }
 
 var loadedConfig *Config
+
+func isRFC1918Private(ip net.IP) bool {
+	if ip4 := ip.To4(); ip4 != nil {
+		switch {
+		case ip4[0] == 10:
+			return true
+		case ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31:
+			return true
+		case ip4[0] == 192 && ip4[1] == 168:
+			return true
+		}
+	}
+	return false
+}
 
 func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 	ifaces, err := net.Interfaces()
@@ -44,7 +58,7 @@ func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 			case *net.IPAddr:
 				ip = v.IP
 			}
-			if ip == nil || ip.IsLoopback() {
+			if ip == nil || ip.IsLoopback() || !isRFC1918Private(ip) {
 				continue
 			}
 			ip = ip.To4()
@@ -58,7 +72,7 @@ func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 		}
 	}
 	if privateIPv4 == "" {
-		return "", "", "", errors.New("no private IPv4 address found")
+		return "", "", "", errors.New("no RFC 1918 private IPv4 address found")
 	}
 
 	publicIPv4, err = fetchPublicIP("https://api.ipify.org")
