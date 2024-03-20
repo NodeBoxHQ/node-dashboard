@@ -19,7 +19,7 @@
 </head>
 <body>
 <main class="px-5 py-20 md:px-6">
-    <header class="flex flex-col items-center justify-center">
+    <header class="flex flex-col items-center justify-center mt-5">
         <img src="" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" hx-get="/data/logo" hx-trigger="load" hx-swap="outerHTML" />
         <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="load" hx-swap="outerHTML"></div>
     </header>

@@ -28,7 +28,7 @@ var publicFS embed.FS
 func main() {
 	config.ShowAsciiArt()
 	logger.InitLogger()
-	logger.Info("Initializing Node Dashboard...")
+	logger.Info("Initializing NodeBox Dashboard")
 
 	cfg, err := config.LoadConfig()
 

@@ -229,15 +229,19 @@ func GetActivity(config *config.Config) fiber.Handler {
 
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
 
+			needBr := ""
+
 			if !status.Failure {
 				if status.Syncing {
 					tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d <br> <b>Max Height</b> - %d", status.CurrentHeight, status.MaxHeight)
+					needBr = "<br>"
 				} else {
 					tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d", status.CurrentHeight)
+					needBr = "<br>"
 				}
 			}
 
-			tippyContent = tippyContent + fmt.Sprintf("<b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
+			tippyContent = tippyContent + fmt.Sprintf("%s <b>Dashboard Version</b> - %s", needBr, config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
@@ -263,13 +267,14 @@ func GetActivity(config *config.Config) fiber.Handler {
 
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Version</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, status.Version, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
 
+			needBr := ""
+
 			if !status.Failure {
 				tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d", status.Height)
-			} else {
-				tippyContent = tippyContent + "<b>Current Height</b> - 0"
+				needBr = "<br>"
 			}
 
-			tippyContent = tippyContent + fmt.Sprintf("<br> <b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
+			tippyContent = tippyContent + fmt.Sprintf("%s <b>Dashboard Version</b> - %s", needBr, config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Nulink" {

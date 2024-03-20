@@ -1,6 +1,17 @@
 function attachTippy() {
     if(document.getElementById('activity-bar')) {
         tippy('#activity-bar', {
+            popperOptions: {
+                modifiers: [
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top'],
+                        },
+                    },
+                ],
+            },
+            flip: false,
             content: document.getElementById('activity-bar').getAttribute('tooltip-data'),
             allowHTML: true,
             interactive: true,

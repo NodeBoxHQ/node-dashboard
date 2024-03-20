@@ -19,6 +19,7 @@ func NodeStatus() Status {
 	status := Status{
 		Failure: true,
 		Height:  0,
+		Version: "Unknown",
 	}
 
 	if err != nil {

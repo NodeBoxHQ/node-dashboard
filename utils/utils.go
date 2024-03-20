@@ -198,6 +198,13 @@ func SelfUpdate(version string) {
 		return
 	}
 
+	err = os.Chmod(oldBinary, 0755)
+
+	if err != nil {
+		logger.Error("Error changing permissions of new binary:", err)
+		return
+	}
+
 	_, err = exec.Command("systemctl", "restart", "nodebox-dashboard").Output()
 
 	if err != nil {
