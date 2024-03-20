@@ -47,25 +47,26 @@ func DiskUsage(path string) (disk TotalDiskUsage) {
 func GetLogo(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
-			return c.SendString(`<img src="/assets/img/logo/linea-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/linea-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else if config.Node == "Dusk" {
-			return c.SendString(`<img src="/assets/img/logo/dusk-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/dusk-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else if config.Node == "Nulink" {
-			return c.SendString(`<img src="/assets/img/logo/nulink-logo.png" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`)
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/nulink-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else {
 			return c.SendString("")
 		}
 	}
 }
 
-func GetCPUUsage(c *fiber.Ctx) error {
-	cpuUsageTemplate := `
-                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML transition:true">
+func GetCPUUsage(ipv4 string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		cpuUsageTemplate := `
+                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu?nodeip=%s" hx-trigger="load" hx-swap="outerHTML transition:true">
                     <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">CPU</h3>
                     <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-								<img src="/assets/img/icons/cpu.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+								<img src="/assets/img/icons/cpu.gif?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -76,34 +77,36 @@ func GetCPUUsage(c *fiber.Ctx) error {
                         </div>
                     </div>
                 </div>
-	`
+		`
 
-	before, err := cpu.Get()
-	if err != nil {
-		return c.SendString(fmt.Sprintf(cpuUsageTemplate, 0.0, 0.0))
+		before, err := cpu.Get()
+		if err != nil {
+			return c.SendString(fmt.Sprintf(cpuUsageTemplate, ipv4, ipv4, 0.0, 0.0))
+		}
+		time.Sleep(time.Second)
+
+		after, err := cpu.Get()
+		if err != nil {
+			return c.SendString(fmt.Sprintf(cpuUsageTemplate, ipv4, ipv4, 0.0, 0.0))
+		}
+
+		total := float64(after.Total - before.Total)
+		idle := float64(after.Idle - before.Idle)
+		usage := 100 * (total - idle) / total
+
+		return c.SendString(fmt.Sprintf(cpuUsageTemplate, ipv4, ipv4, math.Round(usage*100)/100, math.Round(usage*100)/100))
 	}
-	time.Sleep(time.Second)
-
-	after, err := cpu.Get()
-	if err != nil {
-		return c.SendString(fmt.Sprintf(cpuUsageTemplate, 0.0, 0.0))
-	}
-
-	total := float64(after.Total - before.Total)
-	idle := float64(after.Idle - before.Idle)
-	usage := 100 * (total - idle) / total
-
-	return c.SendString(fmt.Sprintf(cpuUsageTemplate, math.Round(usage*100)/100, math.Round(usage*100)/100))
 }
 
-func GetRAMUsage(c *fiber.Ctx) error {
-	ramUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+func GetRAMUsage(ipv4 string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ramUsageTemplate := `
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">RAM</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-							<img src="/assets/img/icons/memory.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+							<img src="/assets/img/icons/memory.gif?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -116,24 +119,26 @@ func GetRAMUsage(c *fiber.Ctx) error {
        </div>
 	`
 
-	memoryStat, err := memory.Get()
+		memoryStat, err := memory.Get()
 
-	if err != nil {
-		return c.SendString(fmt.Sprintf(ramUsageTemplate, 0.0, 0.0))
+		if err != nil {
+			return c.SendString(fmt.Sprintf(ramUsageTemplate, ipv4, ipv4, 0.0, 0.0))
+		}
+
+		usage := 100 * (float64(memoryStat.Used) / float64(memoryStat.Total))
+		return c.SendString(fmt.Sprintf(ramUsageTemplate, ipv4, ipv4, math.Round(usage*100)/100, math.Round(usage*100)/100))
 	}
-
-	usage := 100 * (float64(memoryStat.Used) / float64(memoryStat.Total))
-	return c.SendString(fmt.Sprintf(ramUsageTemplate, math.Round(usage*100)/100, math.Round(usage*100)/100))
 }
 
-func GetDiskUsage(c *fiber.Ctx) error {
-	diskUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+func GetDiskUsage(ipv4 string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		diskUsageTemplate := `
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Disk Usage</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px]">
-							<img src="/assets/img/icons/storage.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+							<img src="/assets/img/icons/storage.gif?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
                             </div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %v </div>
                             <div class="text-cardSubBodyColor text-sm flex items-center justify-center"> [%%] </div>
@@ -145,46 +150,48 @@ func GetDiskUsage(c *fiber.Ctx) error {
            </div>
        </div>
 	`
-	rootUsage := DiskUsage("/")
-	totalUsage := TotalDiskUsage{
-		All:  rootUsage.All,
-		Used: rootUsage.Used,
-		Free: rootUsage.Free,
-	}
+		rootUsage := DiskUsage("/")
+		totalUsage := TotalDiskUsage{
+			All:  rootUsage.All,
+			Used: rootUsage.Used,
+			Free: rootUsage.Free,
+		}
 
-	if _, err := os.Stat("/mnt"); !os.IsNotExist(err) {
-		mntFolders, err := ioutil.ReadDir("/mnt")
-		if err == nil {
-			for _, folder := range mntFolders {
-				if !folder.IsDir() {
-					continue
+		if _, err := os.Stat("/mnt"); !os.IsNotExist(err) {
+			mntFolders, err := ioutil.ReadDir("/mnt")
+			if err == nil {
+				for _, folder := range mntFolders {
+					if !folder.IsDir() {
+						continue
+					}
+
+					path := "/mnt/" + folder.Name()
+					usage := DiskUsage(path)
+
+					totalUsage.All += usage.All
+					totalUsage.Used += usage.Used
+					totalUsage.Free += usage.Free
 				}
-
-				path := "/mnt/" + folder.Name()
-				usage := DiskUsage(path)
-
-				totalUsage.All += usage.All
-				totalUsage.Used += usage.Used
-				totalUsage.Free += usage.Free
 			}
 		}
-	}
 
-	if totalUsage.All > 0 {
-		totalUsage.Used = uint64((float64(totalUsage.Used) / float64(totalUsage.All)) * 100)
-	}
+		if totalUsage.All > 0 {
+			totalUsage.Used = uint64((float64(totalUsage.Used) / float64(totalUsage.All)) * 100)
+		}
 
-	return c.SendString(fmt.Sprintf(diskUsageTemplate, totalUsage.Used, totalUsage.Used))
+		return c.SendString(fmt.Sprintf(diskUsageTemplate, ipv4, ipv4, totalUsage.Used, totalUsage.Used))
+	}
 }
 
-func GetSystemUptime(c *fiber.Ctx) error {
-	uptimeTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+func GetSystemUptime(ipv4 string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		uptimeTemplate := `
+       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Uptime</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
                             <div class="w-[45px] ml-2">
-								<img src="/assets/img/icons/runtime.gif" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
+								<img src="/assets/img/icons/runtime.gif?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />
 							</div>
                             <div class="pt-[5px] text-center font-normal text-textColor flex flex-col my-auto w-[90%%]"> %s </div>
                         </div>
@@ -192,25 +199,28 @@ func GetSystemUptime(c *fiber.Ctx) error {
        </div>
 	`
 
-	uptime, err := uptime2.Get()
+		uptime, err := uptime2.Get()
 
-	if err != nil {
-		return c.SendString(fmt.Sprintf(uptimeTemplate, "0s"))
+		if err != nil {
+			return c.SendString(fmt.Sprintf(uptimeTemplate, ipv4, ipv4, "0s"))
+		}
+
+		return c.SendString(fmt.Sprintf(uptimeTemplate, ipv4, ipv4, utils.SecondsToReadable(int(uptime.Seconds()))))
 	}
-
-	return c.SendString(fmt.Sprintf(uptimeTemplate, utils.SecondsToReadable(int(uptime.Seconds()))))
 }
 
 func GetActivity(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
 			activityTemplate := `
-        		<div class="cursor-pointer w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="cursor-pointer w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
 						<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
 						<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
 						<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
+
+			activityTemplate = strings.Replace(activityTemplate, "NODE_IP", config.IPv4, -1)
 
 			status := linea.NodeStatus()
 			color := ""
@@ -246,12 +256,14 @@ func GetActivity(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
             		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
+
+			activityTemplate = strings.Replace(activityTemplate, "NODE_IP", config.IPv4, -1)
 
 			status := dusk.NodeStatus()
 			color := ""
@@ -279,12 +291,14 @@ func GetActivity(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Nulink" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
             		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
         		</div>
 			`
+
+			activityTemplate = strings.Replace(activityTemplate, "NODE_IP", config.IPv4, -1)
 
 			status := nulink.NodeStatus()
 			color := ""

@@ -198,7 +198,7 @@ func SelfUpdate(version string) {
 		return
 	}
 
-	err = os.Chmod(oldBinary, 0755)
+	_, err = exec.Command("chmod", "+x", oldBinary).Output()
 
 	if err != nil {
 		logger.Error("Error changing permissions of new binary:", err)

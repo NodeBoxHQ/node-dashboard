@@ -53,16 +53,17 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("views/index.jet", fiber.Map{
-			"Title": fmt.Sprintf("Dashboard - %s", cfg.Node),
+			"Title":  fmt.Sprintf("Dashboard - %s", cfg.Node),
+			"NodeIP": cfg.IPv4,
 		})
 	})
 
 	data := app.Group("/data")
 	data.Get("/logo", services.GetLogo(cfg))
-	data.Get("/cpu", services.GetCPUUsage)
-	data.Get("/ram", services.GetRAMUsage)
-	data.Get("/uptime", services.GetSystemUptime)
-	data.Get("/disk", services.GetDiskUsage)
+	data.Get("/cpu", services.GetCPUUsage(cfg.IPv4))
+	data.Get("/ram", services.GetRAMUsage(cfg.IPv4))
+	data.Get("/uptime", services.GetSystemUptime(cfg.IPv4))
+	data.Get("/disk", services.GetDiskUsage(cfg.IPv4))
 	data.Get("/activity", services.GetActivity(cfg))
 
 	actions := app.Group("/actions")

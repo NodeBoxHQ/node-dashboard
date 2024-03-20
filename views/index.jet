@@ -6,22 +6,22 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
-    <link rel="stylesheet" href="/assets/css/vendor/tippy-6.3.7.min.css" />
-    <link rel="stylesheet" href="/assets/css/vendor/sweetalert2-11.10.6.min.css" />
-    <link rel="stylesheet" href="/assets/css/style.css" />
-    <link rel="icon" type="image/x-icon" href="/assets/img/icons/favicon.ico"/>
+    <link rel="stylesheet" href="/assets/css/vendor/tippy-6.3.7.min.css?nodeip={{ NodeIP }}" />
+    <link rel="stylesheet" href="/assets/css/vendor/sweetalert2-11.10.6.min.css?nodeip={{ NodeIP }}" />
+    <link rel="stylesheet" href="/assets/css/style.css?nodeip={{ NodeIP }}" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/icons/favicon.ico?nodeip={{ NodeIP }}"/>
     <title>NodeBox | {{ Title }}</title>
-    <script type="application/javascript" src="/assets/js/vendor/alpine-3.13.7.min.js" defer></script>
-    <script type="application/javascript" src="/assets/js/vendor/popperjs-2.11.8.min.js"></script>
-    <script type="application/javascript" src="/assets/js/vendor/tippy-6.3.7.umd.min.js"></script>
-    <script type="application/javascript" src="/assets/js/vendor/htmx-1.9.11.min.js"></script>
-    <script type="application/javascript" src="/assets/js/vendor/sweetalert2-11.10.6.min.js"></script>
+    <script type="application/javascript" src="/assets/js/vendor/alpine-3.13.7.min.js?nodeip={{ NodeIP }}" defer></script>
+    <script type="application/javascript" src="/assets/js/vendor/popperjs-2.11.8.min.js?nodeip={{ NodeIP }}"></script>
+    <script type="application/javascript" src="/assets/js/vendor/tippy-6.3.7.umd.min.js?nodeip={{ NodeIP }}"></script>
+    <script type="application/javascript" src="/assets/js/vendor/htmx-1.9.11.min.js?nodeip={{ NodeIP }}"></script>
+    <script type="application/javascript" src="/assets/js/vendor/sweetalert2-11.10.6.min.js?nodeip={{ NodeIP }}"></script>
 </head>
 <body>
 <main class="px-5 py-20 md:px-6">
     <header class="flex flex-col items-center justify-center mt-5">
-        <img src="" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" hx-get="/data/logo" hx-trigger="load" hx-swap="outerHTML" />
-        <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity" hx-trigger="load" hx-swap="outerHTML"></div>
+        <img src="" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" hx-get="/data/logo?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML" />
+        <div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML"></div>
     </header>
     <div class="flex flex-col items-center">
         <div class="max-w-2xl w-full sticky sm:justify-center">
@@ -33,12 +33,12 @@
                     </svg>
                 </button>
                 <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden">
-                    <a @click="open = false" hx-get="/actions/restart-node" hx-confirm="This will restart the blockchain node running on your server" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Node</a>
-                    <a @click="open = false" hx-get="/actions/restart-server" hx-confirm="This will restart the server, you may lose connection for some time" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Server</a>
+                    <a @click="open = false" hx-get="/actions/restart-node?nodeip={{ NodeIP }}" hx-confirm="This will restart the blockchain node running on your server" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Node</a>
+                    <a @click="open = false" hx-get="/actions/restart-server?nodeip={{ NodeIP }}" hx-confirm="This will restart the server, you may lose connection for some time" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Restart Server</a>
                 </div>
             </div>
             <div id="cards" class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:grid-cols-2 gap-3">
-                <div class="flex justify-center items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu" hx-trigger="load" hx-swap="outerHTML transition:true">
+                <div class="flex justify-center items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML transition:true">
                     <div role="status" class="flex justify-center items-center">
                         <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
@@ -47,16 +47,16 @@
                         <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
-                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
-                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime?nodeip={{ NodeIP }}" hx-trigger="load" hx-swap="outerHTML transition:true"></div>
             </div>
         </div>
     </div>
     <div class="flex justify-center items-center" style="margin-top: 25px;">
-        <a href="https://nodebox.cloud/" target="_blank"><img src="/assets/img/logo/nodebox-logo.png" alt="logo-expanded" class="w-44 h-auto object-contain mx-auto block"></a>
+        <a href="https://nodebox.cloud/" target="_blank"><img src="/assets/img/logo/nodebox-logo.png?nodeip={{ NodeIP }}" alt="logo-expanded" class="w-44 h-auto object-contain mx-auto block"></a>
     </div>
 </main>
-<script type="application/javascript" src="/assets/js/index.js"></script>
+<script type="application/javascript" src="/assets/js/index.js?nodeip={{ NodeIP }}"></script>
 </body>
 </html>
