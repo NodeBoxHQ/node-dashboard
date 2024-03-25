@@ -10,7 +10,7 @@ import (
 func RestartNode(cfg *config.Config) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if cfg.Node == "Linea" {
-			err := exec.Command("systemctl", "restart", "linea").Run()
+			err := exec.Command("systemctl", "restart", "besu").Run()
 			if err != nil {
 				return c.SendString("Error stopping linea service")
 			} else {

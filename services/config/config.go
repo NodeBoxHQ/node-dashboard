@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"github.com/common-nighthawk/go-figure"
@@ -12,7 +11,7 @@ import (
 	"strings"
 )
 
-const version = "1.0.4"
+const version = "1.0.5"
 
 type Config struct {
 	Node                    string `json:"node"`
@@ -72,7 +71,7 @@ func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 		}
 	}
 	if privateIPv4 == "" {
-		return "", "", "", errors.New("no RFC 1918 private IPv4 address found")
+		privateIPv4 = "127.0.0.1"
 	}
 
 	publicIPv4, err = fetchPublicIP("https://api.ipify.org")
@@ -123,8 +122,8 @@ func LoadConfig() (*Config, error) {
 		logger.Info("Nulink node detected")
 		config.Node = "Nulink"
 	} else {
-		logger.Error("Unknown node detected, defaulting to Nulink")
-		config.Node = "Nulink"
+		logger.Error("Unknown node detected, defaulting to Linea")
+		config.Node = "Linea"
 		badHostname = true
 	}
 
