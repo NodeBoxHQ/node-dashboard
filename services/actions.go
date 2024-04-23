@@ -23,6 +23,13 @@ func RestartNode(cfg *config.Config) func(c *fiber.Ctx) error {
 			} else {
 				return c.SendString("Rusk service stopped")
 			}
+		} else if cfg.Node == "Babylon" {
+			err := exec.Command("systemctl", "restart", "babylond").Run()
+			if err != nil {
+				return c.SendString("Error stopping babylon service")
+			} else {
+				return c.SendString("Babylon service stopped")
+			}
 		}
 		return c.SendString("Unknown node")
 	}

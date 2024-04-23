@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"github.com/NodeboxHQ/node-dashboard/services/babylon"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
 	"github.com/NodeboxHQ/node-dashboard/services/dusk"
 	"github.com/NodeboxHQ/node-dashboard/services/linea"
@@ -52,6 +53,8 @@ func GetLogo(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/dusk-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else if config.Node == "Nulink" {
 			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/nulink-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+		} else if config.Node == "Babylon" {
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/babylon-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else {
 			return c.SendString("")
 		}
@@ -213,7 +216,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
 			activityTemplate := `
-        		<div class="cursor-pointer w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-64 h-7 mt-5 cursor-pointer rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
 						<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
 						<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
 						<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
@@ -256,7 +259,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Dusk" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
             		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
@@ -291,7 +294,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
 		} else if config.Node == "Nulink" {
 			activityTemplate := `
-        		<div class="w-2/6 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
             		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
             		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
             		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
@@ -315,6 +318,42 @@ func GetActivity(config *config.Config) fiber.Handler {
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
 
 			tippyContent = tippyContent + fmt.Sprintf("<br> <b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
+
+			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
+		} else if config.Node == "Babylon" {
+			activityTemplate := `
+				<div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+            		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
+            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
+            		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
+        		</div>
+			`
+
+			activityTemplate = strings.Replace(activityTemplate, "NODE_IP", config.IPv4, -1)
+
+			status := babylon.NodeStatus()
+			color := ""
+			adjective := ""
+
+			if status.Failure {
+				color = "bg-red-500"
+				adjective = "Offline"
+			} else {
+				color = "bg-green-500"
+				adjective = "Online"
+			}
+
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Private IPv4</b> - %s <br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.PrivateIPv4, config.IPv4, config.IPv6)
+
+			needBr := ""
+
+			if !status.Failure {
+				tippyContent = tippyContent + fmt.Sprintf("<b>Current Height</b> - %d", status.Height)
+				needBr = "<br>"
+			}
+
+			tippyContent = tippyContent + fmt.Sprintf("%s <b>Dashboard Version</b> - %s", needBr, config.NodeboxDashboardVersion)
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
 
 			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const version = "1.0.5"
+const version = "1.0.6"
 
 type Config struct {
 	Node                    string `json:"node"`
@@ -121,9 +121,12 @@ func LoadConfig() (*Config, error) {
 	} else if strings.Contains(hostname, "-nulink") {
 		logger.Info("Nulink node detected")
 		config.Node = "Nulink"
+	} else if strings.Contains(hostname, "-babylon") {
+		logger.Info("Babylon node detected")
+		config.Node = "Babylon"
 	} else {
-		logger.Error("Unknown node detected, defaulting to Linea")
-		config.Node = "Linea"
+		logger.Error("Unknown node detected, defaulting to Babylon")
+		config.Node = "Babylon"
 		badHostname = true
 	}
 
