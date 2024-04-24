@@ -64,7 +64,7 @@ func GetLogo(config *config.Config) fiber.Handler {
 func GetCPUUsage(ipv4 string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		cpuUsageTemplate := `
-                <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu?nodeip=%s" hx-trigger="load" hx-swap="outerHTML transition:true">
+                <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/cpu?nodeip=%s" hx-trigger="load" hx-swap="outerHTML transition:true">
                     <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">CPU</h3>
                     <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -104,7 +104,7 @@ func GetCPUUsage(ipv4 string) fiber.Handler {
 func GetRAMUsage(ipv4 string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ramUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+       <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/ram?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">RAM</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -136,7 +136,7 @@ func GetRAMUsage(ipv4 string) fiber.Handler {
 func GetDiskUsage(ipv4 string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		diskUsageTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+       <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/disk?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Disk Usage</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -189,7 +189,7 @@ func GetDiskUsage(ipv4 string) fiber.Handler {
 func GetSystemUptime(ipv4 string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		uptimeTemplate := `
-       <div class="cursor-pointer items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
+       <div class="items-center py-2.5 px-5 border backdrop-blur-md border-cardBackgroundColor rounded-[20px] bg-cardBackgroundColor w-full shadow-md" hx-get="/data/uptime?nodeip=%s" hx-trigger="every 1s" hx-swap="outerHTML transition:true">
            <h3 class="mb-2.5 text-center text-cardTitleColor text-lg font-semibold">Uptime</h3>
            <div class="flex flex-col">
                         <div class="flex content-between items-center gap-1.5 justify-around flex-col">
@@ -216,7 +216,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
 			activityTemplate := `
-        		<div class="w-64 h-7 mt-5 cursor-pointer rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+        		<div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
 						<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
 						<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
 						<div class="items-center text-xs font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
