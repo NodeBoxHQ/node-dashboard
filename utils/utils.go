@@ -44,11 +44,11 @@ func SecondsToReadable(seconds int) string {
 func InstallService() {
 	hostname, _ := os.Hostname()
 
-	if hostname == "hayzam-pc" {
+	if hostname == "hayzam-pc" || hostname == "nodebox-xally" {
 		return
 	}
 
-	if strings.Contains(hostname, "-nulink") || hostname == "hayzam-pc" {
+	if strings.Contains(hostname, "-nulink") {
 		return
 	}
 
@@ -280,6 +280,6 @@ func FetchLatestReleaseDownloadURL(owner, repo string, version int) string {
 		return ""
 	}
 
-	logger.Info("No new version found")
+	logger.Debug("No new version found")
 	return ""
 }

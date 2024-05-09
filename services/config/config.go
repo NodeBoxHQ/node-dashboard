@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"github.com/common-nighthawk/go-figure"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
-const version = "1.0.8"
+const version = "1.0.9"
 
 type Config struct {
 	Node                    string `json:"node"`
@@ -88,12 +89,17 @@ func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 }
 
 func fetchPublicIP(url string) (string, error) {
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	ip, err := ioutil.ReadAll(resp.Body)
+
+	ip, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -124,9 +130,12 @@ func LoadConfig() (*Config, error) {
 	} else if strings.Contains(hostname, "-babylon") {
 		logger.Info("Babylon node detected")
 		config.Node = "Babylon"
+	} else if strings.Contains(hostname, "-xcally") || strings.Contains(hostname, "-xally") {
+		logger.Info("Xally node detected")
+		config.Node = "Xally"
 	} else {
-		logger.Error("Unknown node detected, defaulting to Babylon")
-		config.Node = "Babylon"
+		logger.Error("Unknown node detected, defaulting to Xally")
+		config.Node = "Xally"
 		badHostname = true
 	}
 

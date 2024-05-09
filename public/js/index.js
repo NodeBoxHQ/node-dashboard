@@ -11,6 +11,7 @@ function attachTippy() {
                     },
                 ],
             },
+            placement: (nodeType === "Xally") ? 'top' : undefined,
             flip: false,
             content: document.getElementById('activity-bar').getAttribute('tooltip-data'),
             allowHTML: true,
@@ -29,6 +30,26 @@ document.addEventListener("htmx:confirm", function(e) {
         e.detail.issueRequest(true);
         return;
     }
+
+    console.log(e.detail.question.includes("node"), nodeType, e.detail.question)
+
+    if (e.detail.question.includes("node") && nodeType === "Xally") {
+        //toast on the bottom saying Xally doesn't support node restart
+        Swal.fire({
+            title: "Xally does not support restarting",
+            icon: "error",
+            toast: true,
+            position: "bottom",
+            showConfirmButton: false,
+            timer: 3000,
+            width: 400,
+            timerProgressBar: true,
+        });
+
+        return;
+    }
+
+
     Swal.fire({
         title: "Are you sure?",
         text: `${e.detail.question}`,

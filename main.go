@@ -53,8 +53,9 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("views/index.jet", fiber.Map{
-			"Title":  fmt.Sprintf("Dashboard - %s", cfg.Node),
-			"NodeIP": cfg.IPv4,
+			"Title":    fmt.Sprintf("Dashboard - %s", cfg.Node),
+			"NodeIP":   cfg.IPv4,
+			"NodeType": cfg.Node,
 		})
 	})
 
