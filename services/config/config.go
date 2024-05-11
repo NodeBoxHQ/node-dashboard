@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const version = "1.0.9"
+const version = "1.1.0"
 
 type Config struct {
 	Node                    string `json:"node"`

@@ -2,7 +2,6 @@ package xally
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,12 +12,10 @@ import (
 )
 
 const baseURL = "https://api-node.xally.ai"
+const levelPath = "/root/.config/xally_client/Local Storage/leveldb/000003.log"
 
 var (
-	apiKey     string
-	authToken  string
-	retryCount int
-	lock       sync.Mutex
+	lock sync.Mutex
 )
 
 type ApiResponse struct {
@@ -39,25 +36,6 @@ type NodeInfo struct {
 
 var nodeData []NodeInfo
 
-func GetXallyAPIKey() string {
-	file, err := os.Open("/root/.config/xally_client/Local Storage/leveldb/000003.log")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return ""
-	}
-	defer file.Close()
-
-	regex := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if matches := regex.FindString(line); matches != "" {
-			return matches
-		}
-	}
-	return ""
-}
-
 func FetchNodeData() ([]NodeInfo, error) {
 	lock.Lock()
 	defer lock.Unlock()
@@ -68,102 +46,88 @@ func FetchNodeData() ([]NodeInfo, error) {
 		}
 	}
 
-	var nodes []NodeInfo
-	backoff := 1 * time.Second
-	const maxBackoff = 10 * time.Minute
-	retryCount = 0
+	jwtToken, err := getJwtToken()
+	if err != nil {
+		return nil, err
+	}
 
-	for {
-		if retryCount > 5 {
-			fmt.Println("Max retries exceeded")
-			return nil, fmt.Errorf("max retries exceeded")
-		}
+	req, err := http.NewRequest("GET", baseURL+"/nodes/info", nil)
+	if err != nil {
+		return nil, err
+	}
 
-		req, err := http.NewRequest("GET", baseURL+"/nodes/info", nil)
+	req.Header.Add("Authorization", "Bearer "+jwtToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 401 {
+		jwtToken, err = getJwtToken()
 		if err != nil {
 			return nil, err
 		}
 
-		req.Header.Add("Authorization", "Bearer "+authToken)
-		resp, err := http.DefaultClient.Do(req)
+		req.Header.Set("Authorization", "Bearer "+jwtToken)
+		resp, err = http.DefaultClient.Do(req)
 		if err != nil {
-			time.Sleep(backoff)
-			backoff = min(2*backoff, maxBackoff)
-			retryCount++
-			continue
+			return nil, err
 		}
 		defer resp.Body.Close()
-
-		if resp.StatusCode == 401 {
-			newToken, err := getAuthKey(apiKey)
-			if err != nil {
-				return nil, err
-			}
-			authToken = newToken
-			continue
-		}
-
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
-		}
-
-		var apiResp ApiResponse
-		if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-			time.Sleep(backoff)
-			backoff = min(2*backoff, maxBackoff)
-			retryCount++
-			continue
-		}
-
-		if err := json.Unmarshal(apiResp.Data, &nodes); err != nil {
-			return nil, err
-		}
-
-		lastCheckTs := time.Now().Unix()
-
-		for i := range nodes {
-			nodes[i].LastCheckTS = lastCheckTs
-		}
-
-		nodeData = nodes
-		break
 	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
+	}
+
+	var apiResp ApiResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
+		return nil, err
+	}
+
+	var nodes []NodeInfo
+	if err := json.Unmarshal(apiResp.Data, &nodes); err != nil {
+		return nil, err
+	}
+
+	lastCheckTs := time.Now().Unix()
+	for i := range nodes {
+		nodes[i].LastCheckTS = lastCheckTs
+	}
+
+	nodeData = nodes
 
 	return nodes, nil
 }
 
-func getAuthKey(apiKey string) (string, error) {
-	if apiKey == "" {
-		apiKey = GetXallyAPIKey()
-	}
-
-	payload := fmt.Sprintf(`{"api_key":"%s"}`, apiKey)
-	req, err := http.NewRequest("POST", baseURL+"/auth/api-key", bytes.NewBufferString(payload))
+func getJwtToken() (string, error) {
+	file, err := os.Open(levelPath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to open file: %v", err)
+	}
+	defer file.Close()
+
+	var lastToken string
+	tokenRegex := regexp.MustCompile(`[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+`)
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		tokens := tokenRegex.FindAllString(line, -1)
+		if len(tokens) > 0 {
+			lastToken = tokens[len(tokens)-1] // Get the last token in the line
+		}
 	}
 
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	var apiResp ApiResponse
-	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return "", err
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("failed to scan the file: %v", err)
 	}
 
-	if apiResp.Code != 2000 {
-		return "", fmt.Errorf("failed to refresh auth key: %s", apiResp.Message)
+	if lastToken == "" {
+		return "", fmt.Errorf("no JWT token found in the file")
 	}
 
-	key := make(map[string]interface{})
-
-	if err := json.Unmarshal(apiResp.Data, &key); err != nil {
-		return "", err
-	}
-
-	return key["access_token"].(string), nil
+	return lastToken, nil
 }
