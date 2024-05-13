@@ -124,11 +124,14 @@ func CheckRunning(config *config.Config) {
 	}
 
 	if !allGood {
-		message := "🚨 **Xally** Node Malfunction Detected 🚨\n\n"
+		timestamp := time.Now().UTC().Format("2006-01-02 15:04:05")
+		message := "-----------------------------------------------------------------------\n"
+		message += fmt.Sprintf("🚨 **Xally** Node Malfunction Detected @ %s UTC 🚨\n\n", timestamp)
 		message += fmt.Sprintf("👑 **Owner**: %s\n", config.Owner)
 		message += fmt.Sprintf("🌐 **IPv4**: %s\n", config.IPv4)
 		message += fmt.Sprintf("🌐 **IPv6**: %s\n", config.IPv6)
 		message += fmt.Sprintf("⚙️ **Dashboard Version**: %s\n", config.NodeboxDashboardVersion)
+		message += "-----------------------------------------------------------------------\n"
 
 		utils.SendAlert(message)
 	} else {
