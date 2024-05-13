@@ -18,7 +18,9 @@ const baseURL = "https://api-node.xally.ai"
 const levelPath = "/root/.config/xally_client/Local Storage/leveldb/000003.log"
 
 var (
-	lock sync.Mutex
+	lock         sync.Mutex
+	nodeData     []NodeInfo
+	previousData []NodeInfo
 )
 
 type ApiResponse struct {
@@ -36,8 +38,6 @@ type NodeInfo struct {
 	Status      string  `json:"status"`
 	LastCheckTS int64   `json:"last_check_ts"`
 }
-
-var nodeData []NodeInfo
 
 func FetchNodeData() ([]NodeInfo, error) {
 	lock.Lock()
@@ -100,6 +100,7 @@ func FetchNodeData() ([]NodeInfo, error) {
 		nodes[i].LastCheckTS = lastCheckTs
 	}
 
+	previousData = nodeData
 	nodeData = nodes
 
 	return nodes, nil
@@ -121,6 +122,26 @@ func CheckRunning(config *config.Config) {
 			allGood = false
 			break
 		}
+	}
+
+	previousDataMap := make(map[string]NodeInfo)
+	for _, node := range previousData {
+		previousDataMap[node.NodeID] = node
+	}
+
+	var unchangedNodes []string
+
+	for _, node := range nodes {
+		if prevNode, ok := previousDataMap[node.NodeID]; ok {
+			if node.RunningTime == prevNode.RunningTime && node.Point == prevNode.Point {
+				unchangedNodes = append(unchangedNodes, node.NodeID)
+			}
+		}
+	}
+
+	if len(unchangedNodes) > 0 {
+		logger.Error("Nodes have not changed: ", unchangedNodes)
+		allGood = false
 	}
 
 	if !allGood {
