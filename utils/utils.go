@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
@@ -282,4 +283,33 @@ func FetchLatestReleaseDownloadURL(owner, repo string, version int) string {
 
 	logger.Debug("No new version found")
 	return ""
+}
+
+type WebhookMessage struct {
+	Content string `json:"content"`
+}
+
+func SendAlert(content string) bool {
+	webhookURL := "https://discord.com/api/webhooks/1239543600816324669/HtvV0owSKPXAFiMpbAAVnEu2Q28kh84nwyl-uIbAFr4N8nYtj0Nd8MeQcf5036hgIbBu"
+	message := WebhookMessage{Content: content}
+
+	msgBytes, err := json.Marshal(message)
+	if err != nil {
+		logger.Error("Error marshalling alert message:", err)
+		return false
+	}
+
+	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(msgBytes))
+	if err != nil {
+		logger.Error("Error sending alert message:", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		logger.Error("Error sending alert message:", resp.Status)
+		return false
+	}
+
+	return true
 }

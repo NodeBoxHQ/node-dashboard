@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/NodeboxHQ/node-dashboard/services/config"
+	"github.com/NodeboxHQ/node-dashboard/utils"
+	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"net/http"
 	"os"
 	"regexp"
@@ -100,6 +103,37 @@ func FetchNodeData() ([]NodeInfo, error) {
 	nodeData = nodes
 
 	return nodes, nil
+}
+
+func CheckRunning(config *config.Config) {
+	nodes, err := FetchNodeData()
+	allGood := true
+	if err != nil {
+		logger.Error("Error fetching node data: ", err)
+		allGood = false
+	}
+
+	for _, node := range nodes {
+		if node.Status == "running" {
+			continue
+		} else {
+			logger.Error("Node is not running: ", node.NodeID)
+			allGood = false
+			break
+		}
+	}
+
+	if !allGood {
+		message := "🚨 **Xally** Node Malfunction Detected 🚨\n\n"
+		message += fmt.Sprintf("👑 **Owner**: %s\n", config.Owner)
+		message += fmt.Sprintf("🌐 **IPv4**: %s\n", config.IPv4)
+		message += fmt.Sprintf("🌐 **IPv6**: %s\n", config.IPv6)
+		message += fmt.Sprintf("⚙️ **Dashboard Version**: %s\n", config.NodeboxDashboardVersion)
+
+		utils.SendAlert(message)
+	} else {
+		logger.Info("All Xally nodes are running")
+	}
 }
 
 func getJwtToken() (string, error) {

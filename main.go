@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/services"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
+	"github.com/NodeboxHQ/node-dashboard/services/xally"
 	"github.com/NodeboxHQ/node-dashboard/utils"
 	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"github.com/gofiber/fiber/v2"
@@ -112,6 +113,19 @@ func main() {
 			}
 		}
 	}()
+
+	if cfg.Node == "Xally" {
+		webhookTicker := time.NewTicker(1 * time.Minute)
+
+		go func() {
+			for {
+				select {
+				case <-webhookTicker.C:
+					xally.CheckRunning(cfg)
+				}
+			}
+		}()
+	}
 
 	<-stopChan
 }
