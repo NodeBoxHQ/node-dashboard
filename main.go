@@ -115,7 +115,7 @@ func main() {
 	}()
 
 	if cfg.Node == "Xally" {
-		webhookTicker := time.NewTicker(6 * time.Minute)
+		webhookTicker := time.NewTicker(10 * time.Minute)
 
 		go func() {
 			for {
