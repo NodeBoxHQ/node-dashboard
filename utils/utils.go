@@ -92,9 +92,9 @@ WantedBy=multi-user.target
 			logger.Error("Error enabling service", err)
 		}
 
-		logger.Info("Service installed, rebooting")
+		logger.Info("Service installed, exiting now...")
 
-		_, err = exec.Command("reboot").Output()
+		os.Exit(0)
 	} else {
 		logger.Info("Service already installed")
 	}
