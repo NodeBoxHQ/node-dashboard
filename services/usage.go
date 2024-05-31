@@ -454,7 +454,7 @@ func GetActivity(config *config.Config) fiber.Handler {
 			}
 
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.IPv4, config.IPv6)
-			uptimePercentStr := strconv.FormatFloat(status.UptimePercentage, 'f', -1, 64)
+			uptimePercentStr := strconv.FormatFloat(status.UptimePercentage, 'f', -1, 64) + "%%"
 
 			if !failure {
 				tippyContent = tippyContent + fmt.Sprintf("<b>Node ID</b> - %s <br> <b>Uptime</b> - %s <br> <b>Delegation End Date</b> - %s <br> <b>Dashboard Version</b> - %s", status.NodeID, uptimePercentStr, status.DelegationEndDate, config.NodeboxDashboardVersion)
