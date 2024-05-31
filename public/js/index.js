@@ -1,5 +1,6 @@
 function attachTippy() {
     if(document.getElementById('activity-bar')) {
+        tippy.setDefaultProps({ maxWidth: '30em' })
         tippy('#activity-bar', {
             popperOptions: {
                 modifiers: [
@@ -33,8 +34,7 @@ document.addEventListener("htmx:confirm", function(e) {
 
     console.log(e.detail.question.includes("node"), nodeType, e.detail.question)
 
-    if (e.detail.question.includes("node") && nodeType === "Xally") {
-        //toast on the bottom saying Xally doesn't support node restart
+    if (e.detail.question.includes("node") && (nodeType === "Xally" || nodeType === "Juneo")) {
         Swal.fire({
             title: "Xally does not support restarting",
             icon: "error",
