@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 			logger.Error("Error enabling service", err)
 		}
 
-		logger.Info("Service installed, exiting now...")
+		logger.Info("Service installed, exiting now...run 'systemctl start nodebox-dashboard' to start the service")
 
 		os.Exit(0)
 	} else {
