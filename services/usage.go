@@ -51,17 +51,17 @@ func DiskUsage(path string) (disk TotalDiskUsage) {
 func GetLogo(config *config.Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if config.Node == "Linea" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/linea-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/linea-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else if config.Node == "Dusk" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/dusk-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/dusk-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else if config.Node == "Nulink" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/nulink-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/nulink-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else if config.Node == "Babylon" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/babylon-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/babylon-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else if config.Node == "Xally" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/xally-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/xally-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else if config.Node == "Juneo" {
-			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/juneo-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/juneo-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, utils.GetIPForAccess(config.IPv4)))
 		} else {
 			return c.SendString("")
 		}

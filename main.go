@@ -62,10 +62,10 @@ func main() {
 
 	data := app.Group("/data")
 	data.Get("/logo", services.GetLogo(cfg))
-	data.Get("/cpu", services.GetCPUUsage(cfg.IPv4))
-	data.Get("/ram", services.GetRAMUsage(cfg.IPv4))
-	data.Get("/uptime", services.GetSystemUptime(cfg.IPv4))
-	data.Get("/disk", services.GetDiskUsage(cfg.IPv4))
+	data.Get("/cpu", services.GetCPUUsage(utils.GetIPForAccess(cfg.IPv4)))
+	data.Get("/ram", services.GetRAMUsage(utils.GetIPForAccess(cfg.IPv4)))
+	data.Get("/uptime", services.GetSystemUptime(utils.GetIPForAccess(cfg.IPv4)))
+	data.Get("/disk", services.GetDiskUsage(utils.GetIPForAccess(cfg.IPv4)))
 	data.Get("/activity", services.GetActivity(cfg))
 
 	actions := app.Group("/actions")
