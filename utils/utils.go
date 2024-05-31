@@ -321,8 +321,8 @@ func GetIPForAccess(ip string) string {
 		rip, err := os.ReadFile("/root/.nodebox-ip")
 		if err != nil {
 			logger.Error("Error reading .nodebox-ip file:", err)
-			return string(rip)
+			return ip
 		}
-		return string(rip)
+		return strings.TrimSpace(string(rip))
 	}
 }
