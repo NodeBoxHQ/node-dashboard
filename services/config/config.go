@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const version = "1.1.4"
+const version = "1.1.5"
 
 type Config struct {
 	Node                    string `json:"node"`
@@ -133,9 +133,12 @@ func LoadConfig() (*Config, error) {
 	} else if strings.Contains(hostname, "-xcally") || strings.Contains(hostname, "-xally") {
 		logger.Info("Xally node detected")
 		config.Node = "Xally"
+	} else if strings.Contains(hostname, "-juneo") || strings.Contains(hostname, "-june") || strings.Contains(hostname, "-juneogo") {
+		logger.Info("Juneo node detected")
+		config.Node = "Juneo"
 	} else {
-		logger.Error("Unknown node detected, defaulting to Xally")
-		config.Node = "Xally"
+		logger.Error("Unknown node detected, defaulting to Juneo")
+		config.Node = "Juneo"
 		badHostname = true
 	}
 

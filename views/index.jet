@@ -25,7 +25,7 @@
     </header>
     <div class="flex flex-col items-center">
         <div class="max-w-2xl w-full sticky sm:justify-center">
-            {{ if NodeType != "Xally" }}
+            {{ if NodeType != "Xally" && NodeType != "Juneo" }}
                 <div x-data="{ open: false }" class="relative z-[10]">
                     <button @click="open = !open" id="connectionsBtn" class="w-6 h-6 absolute -right-2 -top-6">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-textColor">

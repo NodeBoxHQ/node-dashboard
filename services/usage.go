@@ -5,6 +5,7 @@ import (
 	"github.com/NodeboxHQ/node-dashboard/services/babylon"
 	"github.com/NodeboxHQ/node-dashboard/services/config"
 	"github.com/NodeboxHQ/node-dashboard/services/dusk"
+	"github.com/NodeboxHQ/node-dashboard/services/juneo"
 	"github.com/NodeboxHQ/node-dashboard/services/linea"
 	"github.com/NodeboxHQ/node-dashboard/services/nulink"
 	"github.com/NodeboxHQ/node-dashboard/services/xally"
@@ -58,6 +59,8 @@ func GetLogo(config *config.Config) fiber.Handler {
 			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/babylon-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else if config.Node == "Xally" {
 			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/xally-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
+		} else if config.Node == "Juneo" {
+			return c.SendString(fmt.Sprintf(`<img src="/assets/img/logo/juneo-logo.png?nodeip=%s" alt="logo-expanded" class="w-52 h-auto object-contain mx-auto block" />`, config.IPv4))
 		} else {
 			return c.SendString("")
 		}
@@ -420,6 +423,41 @@ func GetActivity(config *config.Config) fiber.Handler {
 				color = "bg-green-500"
 				adjective = "Online"
 				tippyContent += fmt.Sprintf("<br> <b>Total Nodes</b> - %d (%s) <br> <b>Total Running Time</b> - %.2f <br> <b>Total gXally</b> - %.2f <br> <b>Last Data Update</b> - %s <br> <b>Dashboard Version</b> - %s", len(status), nodeIDs, totalRunTime, accumulatedGXally, lastUpdate, config.NodeboxDashboardVersion)
+			}
+
+			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
+			return c.SendString(fmt.Sprintf(activityTemplate, color, adjective))
+		} else if config.Node == "Juneo" {
+			activityTemplate := `
+				<div class="w-64 h-7 mt-5 rounded-full overflow-hidden relative m-0" hx-get="/data/activity?nodeip=NODE_IP" hx-trigger="every 1s" hx-swap="outerHTML" id="activity-bar" ALPINE_TOOLTIP>
+            		<div class="absolute top-0 left-0 w-full z-0 h-full bg-progressBarBackgroundColor rounded-full"></div>
+            		<div class="absolute top-0 left-0 h-full rounded-[10px] transition-[width] w-full z-10 %s"></div>
+            		<div class="items-center text-sm font-bold text-textColor absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"> Node %s </div>
+        		</div>
+			`
+
+			activityTemplate = strings.Replace(activityTemplate, "NODE_IP", config.IPv4, -1)
+			status := juneo.NodeStatus()
+			color := ""
+			adjective := "Online"
+			failure := status.NodeID == "Unknown" || status.DelegationEndDate == "Unknown" || status.UptimePercentage == 0.0
+
+			if failure {
+				color = "bg-red-500"
+				adjective = "Offline"
+			} else if status.Synced == false {
+				color = "bg-yellow-500"
+				adjective = "Syncing"
+			} else {
+				color = "bg-green-500"
+			}
+
+			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.IPv4, config.IPv6)
+
+			if !failure {
+				tippyContent = tippyContent + fmt.Sprintf("<b>Node ID</b> - %s <br> <b>Uptime</b> - %.2f%% <br> <b>Delegation End Date</b> - %s <br> <b>Dashboard Version</b> - %s", status.NodeID, status.UptimePercentage, status.DelegationEndDate, config.NodeboxDashboardVersion)
+			} else {
+				tippyContent = tippyContent + fmt.Sprintf("<b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
 			}
 
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
