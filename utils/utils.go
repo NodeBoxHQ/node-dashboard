@@ -313,3 +313,16 @@ func SendAlert(content string) bool {
 
 	return true
 }
+
+func GetIPForAccess(ip string) string {
+	if _, err := os.Stat("/root/.nodebox-ip"); os.IsNotExist(err) {
+		return ip
+	} else {
+		rip, err := os.ReadFile("/root/.nodebox-ip")
+		if err != nil {
+			logger.Error("Error reading .nodebox-ip file:", err)
+			return string(rip)
+		}
+		return string(rip)
+	}
+}
