@@ -455,9 +455,9 @@ func GetActivity(config *config.Config) fiber.Handler {
 			tippyContent := fmt.Sprintf("<b>Node</b> - %s <br> <b>Owner</b> - %s<br> <b>Public IPv4</b> - %s <br> <b>Public IPv6</b> - %s <br>", config.Node, config.Owner, config.IPv4, config.IPv6)
 
 			if !failure {
-				tippyContent = tippyContent + fmt.Sprintf("<b>Node ID</b> - %s <br> <b>Uptime</b> - %.2f%% <br> <b>Delegation End Date</b> - %s <br> <b>Dashboard Version</b> - %s", status.NodeID, status.UptimePercentage, status.DelegationEndDate, config.NodeboxDashboardVersion)
+				tippyContent += fmt.Sprintf("<b>Node ID</b> - %s <br> <b>Uptime</b> - %.2f%% <br> <b>Delegation End Date</b> - %s <br> <b>Dashboard Version</b> - %s", status.NodeID, status.UptimePercentage, status.DelegationEndDate, config.NodeboxDashboardVersion)
 			} else {
-				tippyContent = tippyContent + fmt.Sprintf("<b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
+				tippyContent += fmt.Sprintf("<b>Dashboard Version</b> - %s", config.NodeboxDashboardVersion)
 			}
 
 			activityTemplate = strings.Replace(activityTemplate, "ALPINE_TOOLTIP", fmt.Sprintf(`tooltip-data="%s"`, tippyContent), -1)
