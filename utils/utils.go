@@ -45,7 +45,7 @@ func SecondsToReadable(seconds int) string {
 func InstallService() {
 	hostname, _ := os.Hostname()
 
-	if hostname == "hayzam-pc" || hostname == "nodebox-xally" || hostname == "nodebox-juneo" {
+	if hostname == "hayzam-pc" || hostname == "nodebox-xally" {
 		return
 	}
 

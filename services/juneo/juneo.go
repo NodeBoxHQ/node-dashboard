@@ -62,24 +62,31 @@ func getNodeID() string {
 
 func getUptimePercentage() float64 {
 	response, err := http.Post("http://127.0.0.1:9650/ext/info", "application/json", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"info.uptime"}`))
-
 	if err != nil {
 		return 0.0
 	}
-
 	defer response.Body.Close()
 
 	var result map[string]interface{}
-
 	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return 0.0
 	}
 
-	if rewardingStakePercentage, ok := result["result"].(map[string]interface{})["rewardingStakePercentage"].(string); ok {
-		if weightedAveragePercentage, ok := result["result"].(map[string]interface{})["weightedAveragePercentage"].(string); ok {
-			rewardingStakePercentageFloat, _ := strconv.ParseFloat(rewardingStakePercentage, 64)
-			weightedAveragePercentageFloat, _ := strconv.ParseFloat(weightedAveragePercentage, 64)
+	if _, ok := result["error"]; ok {
+		return 0.0
+	}
 
+	resultData, ok := result["result"].(map[string]interface{})
+	if !ok {
+		return 0.0
+	}
+
+	rewardingStakePercentageStr, ok1 := resultData["rewardingStakePercentage"].(string)
+	weightedAveragePercentageStr, ok2 := resultData["weightedAveragePercentage"].(string)
+	if ok1 && ok2 {
+		rewardingStakePercentageFloat, err1 := strconv.ParseFloat(rewardingStakePercentageStr, 64)
+		weightedAveragePercentageFloat, err2 := strconv.ParseFloat(weightedAveragePercentageStr, 64)
+		if err1 == nil && err2 == nil {
 			return float64(int((rewardingStakePercentageFloat+weightedAveragePercentageFloat)/2*100)) / 100
 		}
 	}
