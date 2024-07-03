@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"github.com/NodeboxHQ/node-dashboard/utils/logger"
 	"github.com/common-nighthawk/go-figure"
-	"io"
+	"github.com/pion/stun"
 	"net"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 )
 
 const version = "1.1.6"
@@ -75,35 +73,59 @@ func getIPAddresses() (privateIPv4, publicIPv4, publicIPv6 string, err error) {
 		privateIPv4 = "127.0.0.1"
 	}
 
-	publicIPv4, err = fetchPublicIP("https://api.ipify.org")
+	publicIPv4, publicIPv6, err = getPublicIPsViaSTUN()
 	if err != nil {
 		return privateIPv4, "", "", err
-	}
-
-	publicIPv6, err = fetchPublicIP("https://api6.ipify.org")
-	if err != nil {
-		return privateIPv4, publicIPv4, "", err
 	}
 
 	return privateIPv4, publicIPv4, publicIPv6, nil
 }
 
-func fetchPublicIP(url string) (string, error) {
-	client := &http.Client{
-		Timeout: 10 * time.Second,
+func getPublicIPsViaSTUN() (publicIPv4, publicIPv6 string, err error) {
+	stunServers := []string{
+		"[2001:4860:4864:5:8000::1]:19302",
+		"74.125.250.129:19302",
 	}
 
-	resp, err := client.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+	for _, server := range stunServers {
+		client, err := stun.Dial("udp", server)
+		if err != nil {
+			continue
+		}
+		message := stun.MustBuild(stun.TransactionID, stun.BindingRequest)
+		var response *stun.Message
+		err = client.Do(message, func(event stun.Event) {
+			if event.Error != nil {
+				err = event.Error
+				return
+			}
+			response = event.Message
+		})
+		if err != nil {
+			continue
+		}
 
-	ip, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+		var addr stun.XORMappedAddress
+		if err := addr.GetFrom(response); err != nil {
+			continue
+		}
+
+		if addr.IP.To4() != nil {
+			publicIPv4 = addr.IP.String()
+		} else {
+			publicIPv6 = addr.IP.String()
+		}
+
+		if publicIPv4 != "" {
+			break
+		}
 	}
-	return string(ip), nil
+
+	if publicIPv4 == "" {
+		err = fmt.Errorf("No valid IPv4 address retrieved from any STUN server")
+	}
+
+	return publicIPv4, publicIPv6, err
 }
 
 func LoadConfig() (*Config, error) {
@@ -141,7 +163,7 @@ func LoadConfig() (*Config, error) {
 		config.Node = "Juneo"
 		badHostname = true
 	}
-
+	
 	privateIpv4, ipv4, ipv6, err := getIPAddresses()
 
 	if err != nil {
