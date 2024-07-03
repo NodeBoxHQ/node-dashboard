@@ -3,6 +3,7 @@ package linea
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/NodeboxHQ/node-dashboard/utils"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -18,7 +19,15 @@ type Status struct {
 
 func NodeStatus() Status {
 	status := Status{}
-	url := "http://127.0.0.1:8545"
+	customLineaNodeIP := utils.GetCustomLineaNodeIP()
+
+	var url string
+
+	if customLineaNodeIP != "" {
+		url = "http://" + customLineaNodeIP + ":8545"
+	} else {
+		url = "http://127.0.0.1:8545"
+	}
 
 	syncStatusReq := []byte(`{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}`)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(syncStatusReq))

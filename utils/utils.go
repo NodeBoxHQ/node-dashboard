@@ -16,6 +16,15 @@ import (
 	"strings"
 )
 
+func GetUserHomeDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		logger.Error("Error getting user home directory:", err)
+		return ""
+	}
+	return home
+}
+
 func SecondsToReadable(seconds int) string {
 	days := seconds / 86400
 	seconds %= 86400
@@ -223,11 +232,33 @@ type Release struct {
 	} `json:"assets"`
 }
 
+func GetGithubToken() string {
+	homeDir := GetUserHomeDir()
+
+	if _, err := os.Stat(homeDir + "/.github-token"); os.IsNotExist(err) {
+		return ""
+	} else {
+		token, err := os.ReadFile(homeDir + "/.github-token")
+		if err != nil {
+			logger.Error("Error reading .github-token file:", err)
+			return ""
+		}
+		return strings.TrimSpace(string(token))
+	}
+}
+
 func FetchLatestReleaseDownloadURL(owner, repo string, version int) string {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", owner, repo)
+
+	token := GetGithubToken()
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return ""
+	}
+
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
@@ -315,13 +346,30 @@ func SendAlert(content string) bool {
 }
 
 func GetIPForAccess(ip string) string {
-	if _, err := os.Stat("/root/.nodebox-ip"); os.IsNotExist(err) {
+	homeDir := GetUserHomeDir()
+
+	if _, err := os.Stat(homeDir + "/.nodebox-ip"); os.IsNotExist(err) {
 		return ip
 	} else {
-		rip, err := os.ReadFile("/root/.nodebox-ip")
+		rip, err := os.ReadFile(homeDir + "/.nodebox-ip")
 		if err != nil {
 			logger.Error("Error reading .nodebox-ip file:", err)
 			return ip
+		}
+		return strings.TrimSpace(string(rip))
+	}
+}
+
+func GetCustomLineaNodeIP() string {
+	homeDir := GetUserHomeDir()
+
+	if _, err := os.Stat(homeDir + "/.linea-ip"); os.IsNotExist(err) {
+		return ""
+	} else {
+		rip, err := os.ReadFile(homeDir + "/.linea-ip")
+		if err != nil {
+			logger.Error("Error reading .linea-ip file:", err)
+			return ""
 		}
 		return strings.TrimSpace(string(rip))
 	}
