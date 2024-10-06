@@ -2,3 +2,4 @@ data/
 tmp/
 config.json
 nodebox-dashboard
+nodebox-dashboard-*

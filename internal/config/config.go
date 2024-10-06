@@ -24,7 +24,7 @@ func ParseConfig(path string) *internal.NodeboxConfig {
 		  "environment": "production",
 		  "ip": "0.0.0.0",
 		  "port": 3000,
-		  "logLevel": "info",
+		  "logLevel": "info"
 		}`)
 
 		if err != nil {
