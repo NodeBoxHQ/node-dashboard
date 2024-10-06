@@ -223,6 +223,7 @@ Description=Nodebox Dashboard Service
 After=network.target
 
 [Service]
+WorkingDirectory=/opt/nodebox-dashboard
 ExecStart=/opt/nodebox-dashboard/nodebox-dashboard
 Restart=always
 User=root
