@@ -1,6 +1,3 @@
-node_modules/
-.idea/
-main
+data/
 tmp/
-bin/*
-!bin/.gitkeep
+config.json

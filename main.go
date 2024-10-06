@@ -1,131 +1,82 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
-	"github.com/NodeboxHQ/node-dashboard/services"
-	"github.com/NodeboxHQ/node-dashboard/services/config"
-	"github.com/NodeboxHQ/node-dashboard/services/xally"
-	"github.com/NodeboxHQ/node-dashboard/utils"
-	"github.com/NodeboxHQ/node-dashboard/utils/logger"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/gofiber/template/jet/v2"
-	"log"
-	"net"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/cmd"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/config"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/db"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/handlers"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/handlers/middleware"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/logger"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/services"
 )
 
-//go:embed views/*
-var viewsFS embed.FS
-
-//go:embed public/*
-var publicFS embed.FS
+//go:embed web/build/*
+var webFS embed.FS
 
 func main() {
-	config.ShowAsciiArt()
-	logger.InitLogger()
-	logger.Info("Initializing NodeBox Dashboard")
+	handlers.EmbeddedWebFS = webFS
 
-	cfg, err := config.LoadConfig()
+	cmd.AsciiArt()
+	cfg := config.ParseConfig(cmd.ParseFlags())
 
-	logger.Info("Loaded config: ", cfg)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if err != nil {
-		fmt.Println("Error loading config:", err)
-		return
+	serviceRegistry := services.NewServiceRegistry(db.SetupDatabase(cfg))
+	sS := serviceRegistry.StatsService
+	hS := serviceRegistry.HostService
+	nS := serviceRegistry.NodeService
+
+	go sS.StartStatsCollection(ctx)
+	go hS.StartHostInfoCollection(ctx)
+	go nS.GetNodeInfo()
+
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = io.Discard
+	gin.DefaultErrorWriter = io.Discard
+
+	r := gin.New()
+	r.Use(middleware.CORSConfig())
+	handlers.RegisterRoutes(r, cfg.Environment, sS, hS, nS)
+
+	server := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", cfg.IP, cfg.Port),
+		Handler: r,
 	}
 
-	engine := jet.NewFileSystem(http.FS(viewsFS), ".jet")
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-		Views:                 engine,
-	})
-
-	app.Use("/assets", filesystem.New(filesystem.Config{
-		Root:       http.FS(publicFS),
-		PathPrefix: "public",
-		Browse:     true,
-	}))
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("views/index.jet", fiber.Map{
-			"Title":    fmt.Sprintf("Dashboard - %s", cfg.Node),
-			"NodeIP":   utils.GetIPForAccess(cfg.IPv4),
-			"NodeType": cfg.Node,
-		})
-	})
-
-	data := app.Group("/data")
-	data.Get("/logo", services.GetLogo(cfg))
-	data.Get("/cpu", services.GetCPUUsage(utils.GetIPForAccess(cfg.IPv4)))
-	data.Get("/ram", services.GetRAMUsage(utils.GetIPForAccess(cfg.IPv4)))
-	data.Get("/uptime", services.GetSystemUptime(utils.GetIPForAccess(cfg.IPv4)))
-	data.Get("/disk", services.GetDiskUsage(utils.GetIPForAccess(cfg.IPv4)))
-	data.Get("/activity", services.GetActivity(cfg))
-
-	actions := app.Group("/actions")
-	actions.Get("/restart-node", services.RestartNode(cfg))
-	actions.Get("/restart-server", services.RestartServer)
-	//actions.Get("/shutdown-server", services.ShutdownServer)
-
-	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
-
 	go func() {
-		if err := app.Listen(fmt.Sprintf(":%d", cfg.Port)); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.L.Fatal().Any("error", err).Msg("Failed to start server")
 		}
 	}()
 
-	go func() {
-		checkPortOpen := func(port int) bool {
-			timeout := time.Second
-			conn, err := net.DialTimeout("tcp", net.JoinHostPort("", fmt.Sprintf("%d", port)), timeout)
-			if err != nil {
-				return false
-			}
-			if conn != nil {
-				conn.Close()
-				return true
-			}
-			return false
-		}
+	logger.L.Info().Msgf("Server started on %s:%d", cfg.IP, cfg.Port)
 
-		for !checkPortOpen(cfg.Port) {
-			time.Sleep(time.Second)
-		}
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 
-		utils.InstallService()
-	}()
+	logger.L.Info().Msg("Shutting down gracefully...")
 
-	updateTicker := time.NewTicker(10 * time.Minute)
+	cancel()
 
-	go func() {
-		for {
-			select {
-			case <-updateTicker.C:
-				utils.SelfUpdate(cfg.NodeboxDashboardVersion)
-			}
-		}
-	}()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
 
-	if cfg.Node == "Xally" {
-		webhookTicker := time.NewTicker(10 * time.Minute)
-
-		go func() {
-			for {
-				select {
-				case <-webhookTicker.C:
-					xally.CheckRunning(cfg)
-				}
-			}
-		}()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.L.Fatal().Err(err).Msg("Server forced to shutdown")
 	}
 
-	<-stopChan
+	logger.L.Info().Msg("Server exited properly")
 }

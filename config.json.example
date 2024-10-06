@@ -1,0 +1,7 @@
+{
+  "environment": "dev",
+  "ip": "0.0.0.0",
+  "port": 3000,
+  "logLevel": "debug",
+  "githubToken": "ghp_1234567890"
+}
