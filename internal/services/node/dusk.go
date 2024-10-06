@@ -8,9 +8,9 @@ import (
 )
 
 type Dusk struct {
-	Status  string
-	Height  int
-	Version string
+	Status  string `json:"status"`
+	Height  int    `json:"currentHeight"`
+	Version string `json:"version"`
 }
 
 type InfoResponse struct {

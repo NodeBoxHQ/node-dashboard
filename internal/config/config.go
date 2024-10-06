@@ -11,6 +11,27 @@ import (
 var ParsedConfig *internal.NodeboxConfig
 
 func ParseConfig(path string) *internal.NodeboxConfig {
+	_, err := os.Stat(path)
+
+	if os.IsNotExist(err) {
+		file, err := os.Create(path)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = file.WriteString(`{
+		  "environment": "production",
+		  "ip": "0.0.0.0",
+		  "port": 3000,
+		  "logLevel": "info",
+		}`)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	file, err := os.Open(path)
 
 	if err != nil {

@@ -13,23 +13,33 @@ const DuskSchema = z.object({
 	currentHeight: z.number().int().positive()
 });
 
+const JuneoSchema = z.object({
+	nodeId: z.string(),
+	status: z.string(),
+	uptimePercentage: z.number(),
+	networkName: z.string()
+});
+
 export type Linea = z.infer<typeof LineaSchema>;
 export type Dusk = z.infer<typeof DuskSchema>;
+export type Juneo = z.infer<typeof JuneoSchema>;
 
-type NodeSchema = typeof LineaSchema | typeof DuskSchema;
-export type NodeData = Linea | Dusk;
-export type NodeType = 'pc' | 'linea' | 'dusk';
+type NodeSchema = typeof LineaSchema | typeof DuskSchema | typeof JuneoSchema;
+export type NodeData = Linea | Dusk | Juneo;
+export type NodeType = 'pc' | 'linea' | 'dusk' | 'juneo';
 
 const schemaMap: Record<NodeType, NodeSchema> = {
 	pc: LineaSchema,
 	linea: LineaSchema,
-	dusk: DuskSchema
+	dusk: DuskSchema,
+	juneo: JuneoSchema
 };
 
 const defaultDataMap: Record<NodeType, NodeData> = {
 	pc: { status: '', currentHeight: 0, maxHeight: 0 },
 	linea: { status: '', currentHeight: 0, maxHeight: 0 },
-	dusk: { status: '', version: '', currentHeight: 0 }
+	dusk: { status: '', version: '', currentHeight: 0 },
+	juneo: { nodeId: '', status: '', uptimePercentage: 0, networkName: '' }
 };
 
 export async function fetchNodeData<T extends NodeData>(nodeType: NodeType): Promise<T> {
@@ -91,11 +101,23 @@ export function getBasicNodeData(node: NodeType): BasicNodeData {
 		dusk: {
 			node: 'Dusk',
 			logo: 'https://bucket.nodebox.cloud/dusk-logo.png',
-			description: 'Dusk Node',
+			description:
+				'Dusk is a Layer-1 blockchain designed to provide institutional-level and privacy and compliance in order to make it possible for anybody to trade real-world assets from their wallet. Built for regulated and decentralized finance, Dusk aims to evolve the financial landscape by making it possible for regulated assets to be brought on-chain.',
 			links: [
 				'https://twitter.com/DuskFoundation',
 				'https://discord.gg/dusk-official',
 				'https://dusk.network/'
+			]
+		},
+		juneo: {
+			node: 'Juneo',
+			logo: 'https://bucket.nodebox.cloud/juneo-logo.png',
+			description:
+				'A permissionless protocol, deriving its foundation from the Snowman++ version of the Avalanche DAG consensus.',
+			links: [
+				'https://twitter.com/JUNEO_official',
+				'https://discord.gg/juneosupernet',
+				'https://juneosupernet.com/'
 			]
 		}
 	};

@@ -38,8 +38,11 @@ func main() {
 	hS := serviceRegistry.HostService
 	nS := serviceRegistry.NodeService
 
+	hS.InstallService()
+
 	go sS.StartStatsCollection(ctx)
 	go hS.StartHostInfoCollection(ctx)
+	go hS.StartUpdateChecker(ctx)
 	go nS.GetNodeInfo()
 
 	gin.SetMode(gin.ReleaseMode)

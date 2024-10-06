@@ -14,5 +14,5 @@ export function bytesToGiB(bytes: number): number {
 
 export function uptimeToRelative(seconds: number): string {
 	const date = DateTime.local().minus({ seconds });
-	return date.toRelative();
+	return date.toRelative().replace(' ago', '');
 }

@@ -2,12 +2,20 @@ package host
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/cmd"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/db/models"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/logger"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/utils"
@@ -16,6 +24,13 @@ import (
 
 type Service struct {
 	DB *gorm.DB
+}
+
+type UpdateInfo struct {
+	Error       string `json:"error"`
+	FileName    string `json:"fileName"`
+	DownloadURL string `json:"downloadUrl"`
+	Version     string `json:"version"`
 }
 
 func (s *Service) HostInfo() models.Host {
@@ -92,4 +107,149 @@ func (s *Service) StartHostInfoCollection(ctx context.Context) {
 			return
 		}
 	}
+}
+
+func (s *Service) AutoUpdateDashboard() {
+	updateURL := "https://updater.nodebox.cloud/"
+	resp, err := http.Get(updateURL)
+
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var updateInfo UpdateInfo
+	if err := json.Unmarshal(body, &updateInfo); err != nil {
+		return
+	}
+
+	if updateInfo.Error != "" {
+		return
+	}
+
+	if updateInfo.FileName == "" || updateInfo.DownloadURL == "" || updateInfo.Version == "" {
+		return
+	}
+
+	currentVersion, err := semver.NewVersion(cmd.Version)
+	if err != nil {
+		return
+	}
+
+	newVersion, err := semver.NewVersion(updateInfo.Version)
+	if err != nil {
+		return
+	}
+
+	if currentVersion.Equal(newVersion) || currentVersion.GreaterThan(newVersion) {
+		return
+	}
+
+	resp, err = http.Get(updateInfo.DownloadURL)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	newBinaryPath := filepath.Join(os.TempDir(), updateInfo.FileName)
+	out, err := os.Create(newBinaryPath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return
+	}
+
+	currentBinaryPath := "/opt/nodebox-dashboard/nodebox-dashboard"
+	if err := os.Rename(newBinaryPath, currentBinaryPath); err != nil {
+		return
+	}
+
+	if err := os.Chmod(currentBinaryPath, 0755); err != nil {
+		return
+	}
+
+	cmd := exec.Command("systemctl", "restart", "nodebox-dashboard")
+
+	if err := cmd.Run(); err != nil {
+		return
+	}
+}
+
+func (s *Service) StartUpdateChecker(ctx context.Context) {
+	if runtime.GOOS != "linux" {
+		return
+	}
+
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			s.AutoUpdateDashboard()
+		case <-ctx.Done():
+			logger.L.Info().Msg("Stopping update checker")
+			return
+		}
+	}
+}
+
+func (s *Service) InstallService() error {
+	if runtime.GOOS != "linux" {
+		return fmt.Errorf("this function is only supported on Linux")
+	}
+
+	if _, err := exec.LookPath("systemctl"); err != nil {
+		return fmt.Errorf("systemd is not installed on this system")
+	}
+
+	serviceName := "nodebox-dashboard.service"
+	cmd := exec.Command("systemctl", "is-active", serviceName)
+	if err := cmd.Run(); err == nil {
+		return fmt.Errorf("service is already installed and active")
+	}
+
+	serviceContent := `[Unit]
+Description=Nodebox Dashboard Service
+After=network.target
+
+[Service]
+ExecStart=/opt/nodebox-dashboard/nodebox-dashboard
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+`
+
+	serviceFilePath := "/etc/systemd/system/" + serviceName
+	err := os.WriteFile(serviceFilePath, []byte(serviceContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create service file: %v", err)
+	}
+
+	cmd = exec.Command("systemctl", "daemon-reload")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to reload systemd: %v", err)
+	}
+
+	cmd = exec.Command("systemctl", "enable", serviceName)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to enable service: %v, output: %s", err, string(output))
+	}
+
+	fmt.Println("Service installed successfully. Please restart the program using 'systemctl start nodebox-dashboard'")
+
+	os.Exit(0)
+
+	return nil
 }

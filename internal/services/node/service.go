@@ -14,6 +14,8 @@ func (s *Service) GetNodeInfo() (interface{}, error) {
 		return LineaInfo(), nil
 	} else if s.NodeName == "dusk" {
 		return DuskInfo(), nil
+	} else if s.NodeName == "juneo" {
+		return JuneoInfo(), nil
 	}
 
 	return nil, nil

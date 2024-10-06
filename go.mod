@@ -3,6 +3,7 @@ module github.com/nodeboxhq/nodebox-dashboard
 go 1.22.1
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

@@ -28,7 +28,7 @@
 	});
 
 	let latestUptime = 0;
-	let nodeData: NodeData;
+	let nodeData: NodeData | undefined;
 	let hasNodeData = false;
 
 	$: {
@@ -76,7 +76,12 @@
 
 	$: isLinea = $hostStore.node.toLowerCase() === 'linea' || $hostStore.node === 'pc';
 	$: isDusk = $hostStore.node.toLowerCase() === 'dusk';
+	$: isJuneo = $hostStore.node.toLowerCase() === 'juneo';
 </script>
+
+<svelte:head>
+	<title>NodeBox - {$hostStore.node} Dashboard</title>
+</svelte:head>
 
 <div class="bg-black text-white">
 	<div class="overflow-hidden px-6 pb-20 pt-8 sm:px-10 md:pb-[106px] lg:px-20 lg:pt-11">
@@ -98,7 +103,7 @@
 				{/if}
 
 				<div class="relative z-0">
-					{#if hasNodeData}
+					{#if hasNodeData && nodeData}
 						<Status status={nodeData.status} />
 					{/if}
 
@@ -119,20 +124,20 @@
 					<Card title="Private IPv6" value={$hostStore.privateIpv6} />
 
 					{#if hasNodeData && nodeData}
-						{#if isLinea}
+						{#if isLinea && 'currentHeight' in nodeData && 'maxHeight' in nodeData}
 							{#if nodeData.status === 'Online' || nodeData.status === 'Syncing'}
 								<Card title="Current Height" value={nodeData.currentHeight.toString()} />
-								{#if 'maxHeight' in nodeData}
-									<Card title="Maximum Height" value={nodeData.maxHeight.toString()} />
-								{/if}
+								<Card title="Maximum Height" value={nodeData.maxHeight.toString()} />
 							{/if}
-						{:else if isDusk}
+						{:else if isDusk && 'currentHeight' in nodeData && 'version' in nodeData}
 							{#if nodeData.status === 'Online'}
-								{#if 'version' in nodeData}
-									<Card title="Dusk Version" value={nodeData.version} />
-								{/if}
+								<Card title="Dusk Version" value={nodeData.version} />
 								<Card title="Height" value={nodeData.currentHeight.toString()} />
 							{/if}
+						{:else if isJuneo && 'uptimePercentage' in nodeData && 'networkName' in nodeData && 'nodeId' in nodeData}
+							<Card title="Network Name" value={`${nodeData.networkName}`} />
+							<Card title="Node ID" value={nodeData.nodeId} />
+							<Card title="Uptime Percentage" value={`${nodeData.uptimePercentage.toFixed(2)}%`} />
 						{/if}
 					{/if}
 

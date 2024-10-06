@@ -1,6 +1,8 @@
 package services
 
 import (
+	"github.com/nodeboxhq/nodebox-dashboard/internal/db/models"
+	"github.com/nodeboxhq/nodebox-dashboard/internal/logger"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/services/host"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/services/node"
 	"github.com/nodeboxhq/nodebox-dashboard/internal/services/stats"
@@ -31,12 +33,19 @@ func NewService[T any](db *gorm.DB, dependencies ...interface{}) *T {
 		}
 
 		nodeName := ""
+
+		var hostInfo models.Host
+
 		if hostService != nil {
-			hostInfo := hostService.HostInfo()
+			hostInfo = hostService.HostInfo()
 			nodeName = hostInfo.Node
 		}
 
 		*s = node.Service{DB: db, NodeName: nodeName}
+
+		if hostInfo.Hostname != "" {
+			logger.L.Info().Msgf("Hostname: %s, Node: %s, IPv4 (Private): %s, IPv6 (Private): %s, IPv4 (Public): %s, IPv6 (Public): %s", hostInfo.Hostname, hostInfo.Node, hostInfo.PrivateIPv4, hostInfo.PrivateIPv6, hostInfo.IPv4, hostInfo.IPv6)
+		}
 	}
 
 	return &service
