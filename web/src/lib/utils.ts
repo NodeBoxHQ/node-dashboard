@@ -16,3 +16,7 @@ export function uptimeToRelative(seconds: number): string {
 	const date = DateTime.local().minus({ seconds });
 	return date.toRelative().replace(' ago', '');
 }
+
+export function firstLetterUppercase(str: string): string {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}

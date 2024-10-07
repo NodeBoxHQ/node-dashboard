@@ -33,11 +33,8 @@ func DuskInfo() Dusk {
 	outputStr := strings.TrimSpace(string(output))
 	height, err := strconv.Atoi(outputStr)
 	if err != nil {
-		return dusk
+		dusk.Height = 0
 	}
-
-	dusk.Status = "Online"
-	dusk.Height = height
 
 	cmd = exec.Command("ruskquery", "info")
 	output, err = cmd.Output()
@@ -52,6 +49,12 @@ func DuskInfo() Dusk {
 	} else {
 		dusk.Version = info.Version
 	}
+
+	if dusk.Version != "Unknown" {
+		dusk.Status = "Online"
+	}
+
+	dusk.Height = height
 
 	return dusk
 }

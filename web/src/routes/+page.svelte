@@ -12,7 +12,7 @@
 	import NodeInfo from '$lib/components/node-info.svelte';
 
 	import { writable } from 'svelte/store';
-	import { uptimeToRelative } from '$lib/utils';
+	import { uptimeToRelative, firstLetterUppercase } from '$lib/utils';
 	import { fetchNodeData, type NodeData, type NodeType } from '$lib/api/node';
 
 	const statsStore = writable<Stats[]>([]);
@@ -80,7 +80,7 @@
 </script>
 
 <svelte:head>
-	<title>NodeBox - {$hostStore.node} Dashboard</title>
+	<title>NodeBox - {firstLetterUppercase($hostStore.node)} Dashboard</title>
 </svelte:head>
 
 <div class="bg-black text-white">
