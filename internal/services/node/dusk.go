@@ -25,11 +25,7 @@ func DuskInfo() Dusk {
 	}
 
 	cmd := exec.Command("ruskquery", "block-height")
-	output, err := cmd.Output()
-	if err != nil {
-		return dusk
-	}
-
+	output, _ := cmd.Output()
 	outputStr := strings.TrimSpace(string(output))
 	height, err := strconv.Atoi(outputStr)
 	if err != nil {
