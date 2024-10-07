@@ -9,7 +9,8 @@ const HostSchema = z.object({
 	privateIpv6: z.string(),
 	ipv4: z.string(),
 	ipv6: z.string(),
-	node: z.string()
+	node: z.string(),
+	version: z.string()
 });
 
 export type Host = z.infer<typeof HostSchema>;

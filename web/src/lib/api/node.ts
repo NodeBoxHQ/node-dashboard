@@ -3,14 +3,14 @@ import { z } from 'zod';
 
 const LineaSchema = z.object({
 	status: z.string(),
-	currentHeight: z.number().int().positive(),
-	maxHeight: z.number().int().positive()
+	currentHeight: z.number(),
+	maxHeight: z.number()
 });
 
 const DuskSchema = z.object({
 	status: z.string(),
 	version: z.string(),
-	currentHeight: z.number().int().positive()
+	currentHeight: z.number()
 });
 
 const JuneoSchema = z.object({

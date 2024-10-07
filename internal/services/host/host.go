@@ -73,6 +73,7 @@ func (s *Service) CollectHostInfo() error {
 		node = split[len(split)-1]
 	}
 	store.Node = node
+	store.Version = cmd.Version
 
 	var existingHost models.Host
 	if err := s.DB.First(&existingHost).Error; err != nil {

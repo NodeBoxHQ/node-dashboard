@@ -116,6 +116,7 @@
 				</div>
 
 				<div class="relative z-10 mt-5 flex flex-wrap gap-5">
+					<Card title="Dashboard Version" value={$hostStore.version} />
 					<Card title="Node" value={$hostStore.node} />
 					<Card title="Owner" value={$hostStore.owner} />
 					<Card title="Public IPv4" value={$hostStore.ipv4} />

@@ -8,5 +8,6 @@ type Host struct {
 	PrivateIPv6 string `json:"privateIpv6"`
 	IPv4        string `json:"ipv4"`
 	IPv6        string `json:"ipv6"`
+	Version     string `json:"version"`
 	Node        string `json:"node"`
 }
