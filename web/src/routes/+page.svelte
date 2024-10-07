@@ -24,7 +24,8 @@
 		privateIpv6: '',
 		ipv4: '',
 		ipv6: '',
-		node: ''
+		node: '',
+		version: ''
 	});
 
 	let latestUptime = 0;
