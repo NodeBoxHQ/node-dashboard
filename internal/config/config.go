@@ -91,3 +91,7 @@ func GetLineaIP() string {
 
 	return ParsedConfig.LineaIP
 }
+
+func GetDuskPassword() string {
+	return ParsedConfig.DuskPassword
+}

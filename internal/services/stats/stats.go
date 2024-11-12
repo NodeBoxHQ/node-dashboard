@@ -118,8 +118,6 @@ func (s *Service) CollectStats() {
 		logger.L.Err(err).Msg("Failed to commit transaction")
 		return
 	}
-
-	logger.L.Debug().Msgf("Stats collected: %+v", store)
 }
 
 func (s *Service) StartStatsCollection(ctx context.Context) {

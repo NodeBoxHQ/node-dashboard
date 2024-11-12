@@ -135,6 +135,9 @@
 							{#if nodeData.status === 'Online'}
 								<Card title="Dusk Version" value={nodeData.version} />
 								<Card title="Height" value={nodeData.currentHeight.toString()} />
+								<Card title="Staking Address" value={nodeData.stake.stakingAddress} />
+								<Card title="Eligible Stake" value="{nodeData.stake.eligibleStake}" />
+								<Card title="Accumulated Rewards" value="{nodeData.stake.rewards}" />
 							{/if}
 						{:else if isJuneo && 'uptimePercentage' in nodeData && 'networkName' in nodeData && 'nodeId' in nodeData}
 							<Card title="Network Name" value={`${nodeData.networkName}`} />

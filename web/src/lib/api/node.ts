@@ -10,7 +10,14 @@ const LineaSchema = z.object({
 const DuskSchema = z.object({
 	status: z.string(),
 	version: z.string(),
-	currentHeight: z.number()
+	currentHeight: z.number(),
+	stake: z.object({
+		stakingAddress: z.string(),
+		eligibleStake: z.number(),
+		slashes: z.number(),
+		hardSlashes: z.number(),
+		rewards: z.number()
+	}),
 });
 
 const JuneoSchema = z.object({
@@ -38,7 +45,7 @@ const schemaMap: Record<NodeType, NodeSchema> = {
 const defaultDataMap: Record<NodeType, NodeData> = {
 	pc: { status: '', currentHeight: 0, maxHeight: 0 },
 	linea: { status: '', currentHeight: 0, maxHeight: 0 },
-	dusk: { status: '', version: '', currentHeight: 0 },
+	dusk: { status: '', version: '', currentHeight: 0, stake: { stakingAddress: '', eligibleStake: 0, slashes: 0, hardSlashes: 0, rewards: 0 } },
 	juneo: { nodeId: '', status: '', uptimePercentage: 0, networkName: '' }
 };
 
