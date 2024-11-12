@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const Version = "2.0.3"
+const Version = "2.0.4"
 
 func AsciiArt() {
 	fmt.Println(" _   _           _     ______      __   __")
