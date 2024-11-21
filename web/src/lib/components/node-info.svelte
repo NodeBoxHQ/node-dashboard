@@ -6,7 +6,7 @@
 	const nodeInfo = getBasicNodeData(node as NodeType);
 </script>
 
-<h2 class="mb-3 text-xl font-medium leading-6" style="font-size: 2em; margin-bottom: 1em;">
+<h2 class="mb-3 text-xl font-medium leading-6 hidden" style="font-size: 2em; margin-bottom: 1em;">
 	Node Dashboard
 </h2>
 

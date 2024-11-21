@@ -11,11 +11,11 @@
 	let iconClasses: string;
 
 	if (status === 'Online') {
-		formatted = 'Node is Running';
+		formatted = 'Node is Online';
 		Icon = CheckIcon;
 		iconClasses = 'w-12 h-12 text-green-500';
 	} else if (status === 'Offline') {
-		formatted = 'Node is Down';
+		formatted = 'Node is Offline';
 		Icon = CrossIcon;
 		iconClasses = 'w-12 h-12 text-red-500';
 	} else if (status === 'Syncing') {

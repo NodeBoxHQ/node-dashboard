@@ -75,9 +75,10 @@
 		return () => clearInterval(interval);
 	});
 
-	$: isLinea = $hostStore.node.toLowerCase() === 'linea' || $hostStore.node === 'pc';
+	$: isLinea = $hostStore.node.toLowerCase() === 'linea';
 	$: isDusk = $hostStore.node.toLowerCase() === 'dusk';
 	$: isJuneo = $hostStore.node.toLowerCase() === 'juneo';
+	$: isHyperliquid = $hostStore.node.toLowerCase() === 'hyperliquid' || $hostStore.node === 'pc';
 </script>
 
 <svelte:head>
@@ -86,12 +87,12 @@
 
 <div class="bg-black text-white">
 	<div class="overflow-hidden px-6 pb-20 pt-8 sm:px-10 md:pb-[106px] lg:px-20 lg:pt-11">
-		<header class="mx-auto flex max-w-7xl items-center justify-between gap-6">
+		<header class="mx-auto flex max-w-7xl items-center justify-center gap-6">
 			<a href="index.html" class="block w-fit">
 				<img src="/img/nodebox-logo.png" alt="Nodebox Logo" width="235" class="object-contain" />
 			</a>
 			<button
-				class="btn-toggle flex size-[62px] items-center justify-center rounded-2xl border border-dark-600 bg-dark-800"
+				class="btn-toggle flex size-[62px] items-center justify-center rounded-2xl border border-dark-600 bg-dark-800 hidden"
 			>
 				<ListIcon class="w-12 h-12" />
 			</button>
@@ -131,7 +132,7 @@
 								<Card title="Current Height" value={nodeData.currentHeight.toString()} />
 								<Card title="Maximum Height" value={nodeData.maxHeight.toString()} />
 							{/if}
-						{:else if isDusk && 'currentHeight' in nodeData && 'version' in nodeData}
+						{:else if isDusk && 'currentHeight' in nodeData && 'version' in nodeData && 'stake' in nodeData}
 							{#if nodeData.status === 'Online'}
 								<Card title="Dusk Version" value={nodeData.version} />
 								<Card title="Height" value={nodeData.currentHeight.toString()} />
@@ -143,6 +144,13 @@
 							<Card title="Network Name" value={`${nodeData.networkName}`} />
 							<Card title="Node ID" value={nodeData.nodeId} />
 							<Card title="Uptime Percentage" value={`${nodeData.uptimePercentage.toFixed(2)}%`} />
+						{:else if isHyperliquid && 'applyDuration' in nodeData}
+							{#if nodeData.status === 'Online'}
+								<Card title="Hyperliquid Version" value={nodeData.version} />
+								<Card title="Current Height" value={nodeData.currentHeight.toString()} />
+								<Card title="Block Time" value={nodeData.blockTime} />
+								<Card title="Apply Duration" value={nodeData.applyDuration.toString()} />
+							{/if}
 						{/if}
 					{/if}
 

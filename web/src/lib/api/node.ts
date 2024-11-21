@@ -27,26 +27,37 @@ const JuneoSchema = z.object({
 	networkName: z.string()
 });
 
+const HyperliquidSchema = z.object({
+	status: z.string(),
+	version: z.string(),
+	currentHeight: z.number(),
+	blockTime: z.string(),
+	applyDuration: z.number()
+});
+
 export type Linea = z.infer<typeof LineaSchema>;
 export type Dusk = z.infer<typeof DuskSchema>;
 export type Juneo = z.infer<typeof JuneoSchema>;
+export type Hyperliquid = z.infer<typeof HyperliquidSchema>;
 
-type NodeSchema = typeof LineaSchema | typeof DuskSchema | typeof JuneoSchema;
-export type NodeData = Linea | Dusk | Juneo;
-export type NodeType = 'pc' | 'linea' | 'dusk' | 'juneo';
+type NodeSchema = typeof LineaSchema | typeof DuskSchema | typeof JuneoSchema | typeof HyperliquidSchema;
+export type NodeData = Linea | Dusk | Juneo | Hyperliquid;
+export type NodeType = 'pc' | 'linea' | 'dusk' | 'juneo' | 'hyperliquid';
 
 const schemaMap: Record<NodeType, NodeSchema> = {
-	pc: LineaSchema,
+	pc: HyperliquidSchema,
 	linea: LineaSchema,
 	dusk: DuskSchema,
-	juneo: JuneoSchema
+	juneo: JuneoSchema,
+	hyperliquid: HyperliquidSchema
 };
 
 const defaultDataMap: Record<NodeType, NodeData> = {
-	pc: { status: '', currentHeight: 0, maxHeight: 0 },
+	pc: { status: 'Offline', version: '', currentHeight: 0, blockTime: '', applyDuration: 0 },
 	linea: { status: '', currentHeight: 0, maxHeight: 0 },
 	dusk: { status: '', version: '', currentHeight: 0, stake: { stakingAddress: '', eligibleStake: 0, slashes: 0, hardSlashes: 0, rewards: 0 } },
-	juneo: { nodeId: '', status: '', uptimePercentage: 0, networkName: '' }
+	juneo: { nodeId: '', status: '', uptimePercentage: 0, networkName: '' },
+	hyperliquid: { status: 'Offline', version: '', currentHeight: 0, blockTime: '', applyDuration: 0 }
 };
 
 export async function fetchNodeData<T extends NodeData>(nodeType: NodeType): Promise<T> {
@@ -82,15 +93,14 @@ interface BasicNodeData {
 export function getBasicNodeData(node: NodeType): BasicNodeData {
 	const nodeData: Record<NodeType, BasicNodeData> = {
 		pc: {
-			node: 'Linea',
-			logo: 'https://bucket.nodebox.cloud/linea-logo.png',
+			node: 'Hyperliquid',
+			logo: 'https://bucket.nodebox.cloud/hyperliquid-logo.svg',
 			description:
-				'Linea is a network that scales the experience of Ethereum. Its out-of-the-box compatibility with the Ethereum Virtual Machine enables the deployment of already-existing applications, as well as the creation of new ones that would be too costly on Mainnet. It also enables the community to use those dapps, at a fraction of the cost, and at multiples the speed of Mainnet.',
+				'Hyperliquid is a decentralized perpetual exchange with best-in-class speed, liquidity, and price.',
 			links: [
-				'https://twitter.com/LineaBuild',
-				'https://www.youtube.com/@LineaBuild',
-				'https://discord.gg/linea',
-				'https://linea.build/'
+				'https://twitter.com/HyperliquidX',
+				'https://discord.gg/hyperliquid',
+				'https://hyperliquid.xyz'
 			]
 		},
 		linea: {
@@ -125,6 +135,17 @@ export function getBasicNodeData(node: NodeType): BasicNodeData {
 				'https://twitter.com/JUNEO_official',
 				'https://discord.gg/juneosupernet',
 				'https://juneosupernet.com/'
+			]
+		},
+		hyperliquid: {
+			node: 'Hyperliquid',
+			logo: 'https://bucket.nodebox.cloud/hyperliquid-logo.svg',
+			description:
+				'Hyperliquid is a decentralized perpetual exchange with best-in-class speed, liquidity, and price.',
+			links: [
+				'https://twitter.com/HyperliquidX',
+				'https://discord.gg/hyperliquid',
+				'https://hyperliquid.xyz'
 			]
 		}
 	};
