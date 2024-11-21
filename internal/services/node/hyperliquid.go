@@ -73,7 +73,25 @@ func HyperliquidInfo() (Hyperliquid, error) {
 		}
 
 		if err := json.Unmarshal([]byte(lastLine), &blockData); err != nil {
-			return hl, fmt.Errorf("failed to parse JSON: %v", err)
+			var rawData map[string]interface{}
+			if err := json.Unmarshal([]byte(lastLine), &rawData); err != nil {
+				return hl, fmt.Errorf("failed to parse JSON: %v", err)
+			}
+
+			if blockTimeStr, ok := rawData["block_time"].(string); ok {
+				parsedTime, err := time.Parse("2006-01-02T15:04:05.999", blockTimeStr)
+				if err != nil {
+					return hl, fmt.Errorf("failed to parse block_time: %v", err)
+				}
+				blockData.BlockTime = parsedTime
+			}
+
+			if height, ok := rawData["height"].(float64); ok {
+				blockData.Height = int64(height)
+			}
+			if applyDuration, ok := rawData["apply_duration"].(float64); ok {
+				blockData.ApplyDuration = applyDuration
+			}
 		}
 
 		hl.Status = "Online"
